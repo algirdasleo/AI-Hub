@@ -6,13 +6,13 @@ AI Hub is a platform that allows users to interact with multiple AI models, comp
 
 ### 1. Chat
 
-- Ask questions or provide prompts to multiple AI models.
-- Receive dynamic, AI-generated responses and compare outputs.
+- Ask questions and receive answers from multiple AI models, such as: ChatGPT, Claude, and others.
+- Receive accurate tracking information for each interaction.
 
 ### 2. Comparison
 
-- Evaluate and compare responses from different AI models side by side.
-- Analyze performance, accuracy, and relevance of outputs.
+- Select two different models, run the same prompt and compare their responses.
+- Compare tone, speed, and output accuracy and pick the best result.
 
 ### 3. Projects
 
@@ -33,7 +33,7 @@ AI Hub is a platform that allows users to interact with multiple AI models, comp
 
 # Tech stack
 
-| Layer          | Tech                | Why It Works                                                                   |
+| Layer          | Tech                | Chosen, because                                                                |
 | -------------- | ------------------- | ------------------------------------------------------------------------------ |
 | Language       | TypeScript          | Strong typing across frontend, backend, and shared code                        |
 | Backend        | Express REST        | Full control over multi-LLM orchestration, RAG, token/cost tracking            |
