@@ -13,18 +13,18 @@ AI Hub is a platform that allows users to interact with multiple AI models, comp
 - Select multiple different models, run the same prompt and compare their responses.
 - Compare tone, speed, and output accuracy and pick the best result.
 
-### 3. Projects
+### 3. Projects - upcoming
 
 - Create and manage AI projects.
 - Store and organize content such as documents, images, or other context for AI generation.
 - Generate outputs based on project-specific data.
 
-### 4. Tracking
+### 4. Tracking - upcoming
 
 - Monitor AI usage, token consumption, and spending.
 - Dive into detailed metrics per page, per project, and per AI model.
 
-### 5. Static Content / Guides
+### 5. Static Content / Guides - upcoming
 
 - Access tutorials, guides, and documentation to help users navigate and make the most of AI Hub.
 
