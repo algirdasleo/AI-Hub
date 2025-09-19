@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
-    "test": "jest --config ../jest.config.js"
+    "dev": "tsx watch src/app.ts",
+    "build": "tsc -p .",
+    "start": "node dist/app.js",
+    "test": "vitest run",
+    "lint": "eslint"
   },
   "keywords": [],
   "type": "module",
@@ -12,15 +15,26 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.17",
+    "@ai-sdk/google": "^2.0.14",
+    "@ai-sdk/openai": "^2.0.28",
+    "@supabase/supabase-js": "^2.56.1",
+    "ai": "^5.0.45",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "jose": "^6.1.0"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.3.0",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^3.2.4",
     "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2",
+    "supertest": "^7.1.4",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }
 }

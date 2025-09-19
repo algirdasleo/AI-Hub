@@ -21,10 +21,5 @@
     ]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"],
-  "paths": {
-    "@client/*": ["client/src/*"],
-    "@server/*": ["server/src/*"],
-    "@cms/*": ["cms/src/*"]
-  }
+  "exclude": ["node_modules"]
 }

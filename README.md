@@ -7,11 +7,10 @@ AI Hub is a platform that allows users to interact with multiple AI models, comp
 ### 1. Chat
 
 - Ask questions and receive answers from multiple AI models, such as: ChatGPT, Claude, and others.
-- Receive accurate tracking information for each interaction.
 
 ### 2. Comparison
 
-- Select two different models, run the same prompt and compare their responses.
+- Select multiple different models, run the same prompt and compare their responses.
 - Compare tone, speed, and output accuracy and pick the best result.
 
 ### 3. Projects
