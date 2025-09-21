@@ -1,4 +1,5 @@
 import z from "zod";
+import { User as SBUser } from "@supabase/supabase-js";
 
 export const UserRoleSchema = z.enum(["admin", "user"]);
 export type UserRole = z.infer<typeof UserRoleSchema>;
@@ -15,3 +16,5 @@ export const UserSchema = z.strictObject({
 });
 
 export type User = z.infer<typeof UserSchema>;
+
+export type SupabaseUser = Pick<SBUser, "id" | "email" | "role" | "app_metadata" | "user_metadata">;

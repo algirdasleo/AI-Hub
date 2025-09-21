@@ -19,7 +19,7 @@ export class AuthService {
       return Result.fail({
         type: ErrorType.InternalServerError,
         message: "Failed to create account",
-        cause: error.message,
+        cause: error,
       });
 
     return Result.okVoid();

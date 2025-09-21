@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { SupabaseJWTPayload } from "@server/modules/auth/types.js";
-import { UserSchema } from "@shared/types/auth/index.js";
+import { SupabaseUser, UserSchema } from "@shared/types/auth/index.js";
+import { Session } from "@supabase/supabase-js";
 
 export const createUserFromJWT = (payload: SupabaseJWTPayload) =>
   UserSchema.parse({
@@ -11,7 +12,7 @@ export const createUserFromJWT = (payload: SupabaseJWTPayload) =>
     subscription_tier: payload.app_metadata.subscription_tier,
   });
 
-export const createUserFromSupabase = (supabaseUser: any) =>
+export const createUserFromSupabase = (supabaseUser: SupabaseUser) =>
   UserSchema.parse({
     id: supabaseUser.id,
     email: supabaseUser.email,

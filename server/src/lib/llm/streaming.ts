@@ -7,12 +7,14 @@ import { buildErrorPayload } from "@server/lib/stream/payloads.js";
 import { sendModelError, sendUsage } from "../stream/helpers.js";
 
 import { handleStreamPart } from "./helpers.js";
+import { SelectedModel } from "@shared/config/model-schemas.js";
+import { ModelMessage } from "ai";
 
 export async function streamModel(
   res: Response,
   modelInfo: ModelStreamBaseData,
-  selectedModel: any,
-  modelMessages: any[],
+  selectedModel: SelectedModel,
+  modelMessages: ModelMessage[],
   systemPrompt?: string,
   useWebSearch?: boolean,
 ) {
@@ -46,7 +48,7 @@ export async function streamModel(
 
 export async function streamMultipleModels(
   res: Response,
-  models: Array<{ selectedModel: any; modelMessages: any[]; modelInfo: ModelStreamBaseData }>,
+  models: Array<{ selectedModel: SelectedModel; modelMessages: ModelMessage[]; modelInfo: ModelStreamBaseData }>,
   systemPrompt?: string,
   useWebSearch?: boolean,
 ) {

@@ -3,6 +3,7 @@ import { ErrorType } from "@shared/utils/error-type.js";
 import { sendModelError, setupStreamHeaders, sendStreamComplete } from "@server/lib/stream/helpers.js";
 
 import { extractModelsData, startMultiModelStream } from "./index.js";
+import { ModelStreamErrorData } from "@shared/types/comparison/model-stream-data.js";
 
 export async function streamComparison(req: Request, res: Response) {
   const result = await extractModelsData(req.body);
@@ -27,7 +28,7 @@ export async function streamComparison(req: Request, res: Response) {
       index: 0,
       error: String(error),
       errorType: ErrorType.InternalServerError,
-    } as any);
+    } as ModelStreamErrorData);
     res.end();
   }
 }

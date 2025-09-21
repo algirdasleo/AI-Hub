@@ -45,4 +45,14 @@ AI Hub is a platform that allows users to interact with multiple AI models, comp
 | Monorepo       | Turborepo           | Organizes frontend, backend, shared code, and types                            |
 | Validation     | Zod                 | Ensures schema validation + type safety                                        |
 | Code Quality   | ESLint + Prettier   | Maintains consistent style                                                     |
-| Testing        | Vitest / Jest       | Unit & integration tests                                                       |
+| Testing        | Vitest              | Unit & integration tests                                                       |
+
+# Installation
+
+1. Run `npm install` to install dependencies.
+
+2. Run `npm run dev` to start the project in development mode.
+
+3. Create .env files in both `backend` and `frontend` folders based on the provided `.env.example` files.
+
+4. To setup Supabase database, create a free account at [supabase.com](https://supabase.com) and create a new project. Then copy the supabase database URL and secret key to '.env' file. In order for the auth providers to work, connect them by navigating to Dashboard -> Authentication -> Sign In/Providers.

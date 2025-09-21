@@ -4,6 +4,7 @@ import { setupStreamHeaders, sendModelError, sendStreamComplete, sendUsage } fro
 import { streamModel } from "@server/lib/llm/streaming.js";
 
 import { startChatStream } from "./service.js";
+import { ModelStreamErrorData } from "@shared/types/comparison";
 
 export async function streamChat(req: Request, res: Response) {
   const result = await startChatStream(req.body);
@@ -44,6 +45,9 @@ export async function streamChat(req: Request, res: Response) {
     sendUsage(res, usage);
     sendStreamComplete(res);
   } catch (error) {
-    sendModelError(res, { error: String(error), errorType: ErrorType.InternalServerError } as any);
+    sendModelError(res, {
+      error: String(error),
+      errorType: ErrorType.InternalServerError,
+    } as ModelStreamErrorData);
   }
 }

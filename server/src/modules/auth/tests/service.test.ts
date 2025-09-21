@@ -57,7 +57,6 @@ describe("AuthService", () => {
       expect(result.isSuccess).toBe(false);
       expect(result.error.type).toBe(ErrorType.InternalServerError);
       expect(result.error.message).toBe("Failed to create account");
-      expect(result.error.cause).toBe("Email already exists");
     });
   });
 

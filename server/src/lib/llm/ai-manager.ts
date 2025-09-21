@@ -26,6 +26,7 @@ export async function streamResponse(
       maxOutputTokens: model.settings?.maxOutputTokens,
       tools: tools,
     });
+
     return Result.ok({ fullStream, totalUsage });
   } catch (error) {
     return Result.fail({
