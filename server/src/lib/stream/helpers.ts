@@ -37,6 +37,6 @@ export function endModelStream(res: Response) {
   res.end();
 }
 
-export function sendUsage(res: Response, usage: LanguageModelV2Usage) {
-  res.write(`event: usage\ndata: ${JSON.stringify(usage)}\n\n`);
+export function sendUsage(res: Response, modelId: string, usage: LanguageModelV2Usage) {
+  res.write(`event: usage\ndata: ${JSON.stringify({ modelId, usage })}\n\n`);
 }

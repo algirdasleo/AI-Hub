@@ -20,15 +20,7 @@ export async function streamChat(req: Request, res: Response) {
   const { selectedModel, modelMessages, systemPrompt, useWebSearch } = result.value;
 
   try {
-    const modelInfo = { modelId: selectedModel.modelId, index: 0 };
-    const { success, usage } = await streamModel(
-      res,
-      modelInfo,
-      selectedModel,
-      modelMessages,
-      systemPrompt,
-      useWebSearch,
-    );
+    const { success, usage } = await streamModel(res, selectedModel, modelMessages, systemPrompt, useWebSearch);
     if (!success) {
       res.status(500).json({
         error: "Streaming failed",
@@ -42,7 +34,7 @@ export async function streamChat(req: Request, res: Response) {
       return;
     }
 
-    sendUsage(res, usage);
+    sendUsage(res, selectedModel.modelId, usage);
     sendStreamComplete(res);
   } catch (error) {
     sendModelError(res, {

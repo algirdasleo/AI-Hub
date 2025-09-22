@@ -15,7 +15,6 @@ export const ModelSchema = z.strictObject({
     .optional(),
   messages: z.array(UIMessageSchema).min(1, { error: "Messages array cannot be empty" }),
 });
-
 export type Model = z.infer<typeof ModelSchema>;
 
 export const ChatStreamSchema = z.strictObject({
@@ -23,5 +22,4 @@ export const ChatStreamSchema = z.strictObject({
   systemPrompt: z.string().optional(),
   useWebSearch: z.boolean().optional().default(false),
 });
-
 export type ChatStreamParams = z.infer<typeof ChatStreamSchema>;

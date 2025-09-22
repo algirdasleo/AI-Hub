@@ -1,4 +1,4 @@
-import { ChatStreamParams, UIMessageSchema } from "@shared/types/chat/index.js";
+import { ChatStreamParams } from "@shared/types/chat/index.js";
 import { parseModel } from "@server/lib/parse-models.js";
 import { Result } from "@shared/utils/result.js";
 import { ErrorType } from "@shared/utils/error-type.js";

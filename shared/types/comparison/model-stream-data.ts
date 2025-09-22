@@ -3,7 +3,6 @@ import { ErrorType } from "@shared/utils/index.js";
 
 export const ModelStreamBaseDataSchema = z.strictObject({
   modelId: z.string().min(1),
-  index: z.number().min(0),
 });
 
 export type ModelStreamBaseData = z.infer<typeof ModelStreamBaseDataSchema>;

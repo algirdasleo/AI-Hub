@@ -1,20 +1,16 @@
 import { ErrorType } from "@shared/utils/error-type.js";
-import {
-  ModelStreamBaseData,
-  ModelStreamTextData,
-  ModelStreamErrorData,
-} from "@shared/types/comparison/model-stream-data.js";
+import { ModelStreamTextData, ModelStreamErrorData } from "@shared/types/comparison/model-stream-data.js";
 
-export function buildTextPayload(modelInfo: ModelStreamBaseData, text: string) {
+export function buildTextPayload(modelId: string, text: string) {
   return {
-    ...modelInfo,
+    modelId,
     text,
   } as ModelStreamTextData;
 }
 
-export function buildErrorPayload(modelInfo: ModelStreamBaseData, error: string, errorType: ErrorType) {
+export function buildErrorPayload(modelId: string, error: string, errorType: ErrorType) {
   return {
-    ...modelInfo,
+    modelId,
     error,
     errorType,
   } as ModelStreamErrorData;

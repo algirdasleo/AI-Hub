@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { setAuthCookies, createUserFromSupabase } from "@server/utils/auth.js";
+import { setAuthCookies, createUserFromSupabase, clearAuthCookies } from "@server/utils/auth.js";
 import { SignupResponseDTO, LoginResponseDTO, LogoutResponseDTO } from "@shared/types/auth/index.js";
 import { ErrorResponseDTO } from "@shared/types/core/index.js";
 
@@ -28,8 +28,8 @@ export async function login(req: Request, res: Response) {
   if (!result.isSuccess) {
     return res.status(401).json({
       success: false,
-      type: result.error.message,
-      error: result.error.cause,
+      type: result.error.type,
+      error: result.error.message,
     } as ErrorResponseDTO);
   }
 
@@ -43,8 +43,7 @@ export async function login(req: Request, res: Response) {
 }
 
 export function logout(_: Request, res: Response) {
-  res.clearCookie("sb-access-token");
-  res.clearCookie("sb-refresh-token");
+  clearAuthCookies(res);
 
   res.status(200).json({
     success: true,

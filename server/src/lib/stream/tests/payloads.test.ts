@@ -5,12 +5,12 @@ import { buildTextPayload, buildErrorPayload } from "../payloads.js";
 
 describe("stream payloads", () => {
   it("buildTextPayload includes modelInfo and text", () => {
-    const payload = buildTextPayload({ modelId: "m1", index: 0 } as any, "hello");
-    expect(payload).toEqual({ modelId: "m1", index: 0, text: "hello" });
+    const payload = buildTextPayload("m1", "hello");
+    expect(payload).toEqual({ modelId: "m1", text: "hello" });
   });
 
   it("buildErrorPayload includes modelInfo and error fields", () => {
-    const payload = buildErrorPayload({ modelId: "m1", index: 0 } as any, "fail", ErrorType.StreamError);
-    expect(payload).toEqual({ modelId: "m1", index: 0, error: "fail", errorType: ErrorType.StreamError });
+    const payload = buildErrorPayload("m1", "fail", ErrorType.StreamError);
+    expect(payload).toEqual({ modelId: "m1", error: "fail", errorType: ErrorType.StreamError });
   });
 });

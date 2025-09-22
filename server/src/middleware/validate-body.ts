@@ -7,7 +7,7 @@ export function validateBody<T extends z.ZodType<unknown>>(schema: T) {
     if (!result.success) {
       return res.status(400).json({ error: z.treeifyError(result.error) });
     }
-    req.body = result.data;
+    req.body = result.data; // useful for numbers, dates, etc.
     next();
   };
 }

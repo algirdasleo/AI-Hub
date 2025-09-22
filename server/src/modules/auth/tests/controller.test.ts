@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Request, Response } from "express";
 
-import { signup, login, logout } from "../controller.js";
 import { AuthService } from "../service.js";
 
 import { Result } from "@shared/utils/result.js";
@@ -16,10 +15,18 @@ vi.mock("../service.js", () => ({
 
 vi.mock("@server/utils/auth.js", () => ({
   setAuthCookies: vi.fn(),
+  clearAuthCookies: vi.fn().mockImplementation((res: any) => {
+    if (res && typeof res.clearCookie === "function") {
+      res.clearCookie("sb-access-token");
+      res.clearCookie("sb-refresh-token");
+    }
+  }),
   createUserFromSupabase: vi.fn().mockReturnValue({ id: "123", email: "test@example.com" }),
 }));
 
 import { setAuthCookies } from "@server/utils/auth.js";
+
+import { signup, login, logout } from "../controller.js";
 
 describe("Auth Controller", () => {
   let mockReq: Partial<Request>;
@@ -111,8 +118,8 @@ describe("Auth Controller", () => {
       expect(mockRes.status).toHaveBeenCalledWith(401);
       expect(mockRes.json).toHaveBeenCalledWith({
         success: false,
-        type: "Login failed",
-        error: "Invalid credentials",
+        type: ErrorType.InternalServerError,
+        error: "Login failed",
       });
     });
   });

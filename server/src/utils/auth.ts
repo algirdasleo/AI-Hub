@@ -30,3 +30,8 @@ export const setAuthCookies = (res: Response, accessToken: string, refreshToken:
   res.cookie("sb-access-token", accessToken, cookieOptions);
   res.cookie("sb-refresh-token", refreshToken, cookieOptions);
 };
+
+export const clearAuthCookies = (res: Response) => {
+  res.clearCookie("sb-access-token");
+  res.clearCookie("sb-refresh-token");
+};

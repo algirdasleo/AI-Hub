@@ -5,7 +5,7 @@ import { AIProvider } from "@shared/config/index.js";
 import { ErrorType, Result } from "@shared/utils/index.js";
 import { TextStreamPart, ToolSet } from "ai";
 import { Response } from "express";
-import { ModelStreamBaseData } from "@shared/types/comparison/model-stream-data.js";
+import { ModelStreamBaseData, ModelStreamFirstTokenData } from "@shared/types/comparison/model-stream-data.js";
 import { buildErrorPayload, buildTextPayload } from "@server/lib/stream/payloads.js";
 import { sendModelError, sendModelText, sendModelFirstToken } from "@server/lib/stream/helpers.js";
 
@@ -62,25 +62,26 @@ export function handleStreamPart(
   part: TextStreamPart<ToolSet>,
   firstTokenSent: boolean,
   start: number,
-  modelInfo: ModelStreamBaseData,
+  modelId: string,
 ) {
   switch (part.type) {
     case "text-delta": {
       if (!firstTokenSent) {
         const ms = Date.now() - start;
-        sendModelFirstToken(res, { ...modelInfo, ms });
+        sendModelFirstToken(res, { modelId, ms } as ModelStreamFirstTokenData);
         firstTokenSent = true;
       }
-      sendModelText(res, buildTextPayload(modelInfo, part.text));
+
+      sendModelText(res, buildTextPayload(modelId, part.text));
       return { shouldContinue: true, firstTokenSent };
     }
     case "error": {
-      const errorPayload = buildErrorPayload(modelInfo, String(part.error), ErrorType.StreamError);
+      const errorPayload = buildErrorPayload(modelId, String(part.error), ErrorType.StreamError);
       sendModelError(res, errorPayload);
       return { shouldContinue: false, firstTokenSent };
     }
     case "tool-error": {
-      const toolErrorPayload = buildErrorPayload(modelInfo, String(part.error), ErrorType.StreamToolError);
+      const toolErrorPayload = buildErrorPayload(modelId, String(part.error), ErrorType.StreamToolError);
       sendModelError(res, toolErrorPayload);
       return { shouldContinue: false, firstTokenSent };
     }
