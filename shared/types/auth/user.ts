@@ -1,11 +1,18 @@
 import z from "zod";
 import { User as SBUser } from "@supabase/supabase-js";
 
-export const UserRoleSchema = z.enum(["admin", "user"]);
-export type UserRole = z.infer<typeof UserRoleSchema>;
+export enum UserRole {
+  ADMIN = "admin",
+  USER = "user",
+}
+export const UserRoleSchema = z.enum(UserRole);
 
-export const SubscriptionTierSchema = z.enum(["free", "pro", "enterprise"]);
-export type SubscriptionTier = z.infer<typeof SubscriptionTierSchema>;
+export enum SubscriptionTier {
+  FREE = "free",
+  PRO = "pro",
+  ENTERPRISE = "enterprise",
+}
+export const SubscriptionTierSchema = z.enum(SubscriptionTier);
 
 export const UserSchema = z.strictObject({
   id: z.uuid(),

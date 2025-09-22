@@ -4,7 +4,7 @@ import { setupStreamHeaders, sendModelError, sendStreamComplete, sendUsage } fro
 import { streamModel } from "@server/lib/llm/streaming.js";
 
 import { startChatStream } from "./service.js";
-import { ModelStreamErrorData } from "@shared/types/comparison";
+import { ModelStreamErrorData } from "@shared/types/comparison/model-stream-data.js";
 
 export async function streamChat(req: Request, res: Response) {
   const result = await startChatStream(req.body);

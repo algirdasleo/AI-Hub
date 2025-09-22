@@ -1,7 +1,6 @@
 import { Response } from "express";
 import { SupabaseJWTPayload } from "@server/modules/auth/types.js";
-import { SupabaseUser, UserSchema } from "@shared/types/auth/index.js";
-import { Session } from "@supabase/supabase-js";
+import { SubscriptionTier, SupabaseUser, UserRole, UserSchema } from "@shared/types/auth/index.js";
 
 export const createUserFromJWT = (payload: SupabaseJWTPayload) =>
   UserSchema.parse({
@@ -16,9 +15,9 @@ export const createUserFromSupabase = (supabaseUser: SupabaseUser) =>
   UserSchema.parse({
     id: supabaseUser.id,
     email: supabaseUser.email,
-    role: supabaseUser.role,
-    display_name: supabaseUser.user_metadata.display_name,
-    subscription_tier: supabaseUser.app_metadata.subscription_tier,
+    role: supabaseUser.user_metadata.role || UserRole.USER,
+    display_name: supabaseUser.user_metadata.display_name || "user",
+    subscription_tier: supabaseUser.app_metadata.subscription_tier || SubscriptionTier.FREE,
   });
 
 export const setAuthCookies = (res: Response, accessToken: string, refreshToken: string) => {
