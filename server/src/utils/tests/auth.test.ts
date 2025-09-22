@@ -8,6 +8,15 @@ vi.mock("@shared/types/auth/index.js", () => ({
   UserSchema: {
     parse: vi.fn((data) => data),
   },
+  UserRole: {
+    USER: "user",
+    ADMIN: "admin",
+  },
+  SubscriptionTier: {
+    FREE: "free",
+    PRO: "pro",
+    ENTERPRISE: "enterprise",
+  },
 }));
 
 describe("Auth Utils", () => {
@@ -74,7 +83,7 @@ describe("Auth Utils", () => {
       expect(user).toEqual({
         id: "user456",
         email: "supabase@example.com",
-        role: "authenticated",
+        role: "user",
         display_name: "Supabase User",
         subscription_tier: "premium",
       });
@@ -93,7 +102,7 @@ describe("Auth Utils", () => {
 
       expect(user.id).toBe("user789");
       expect(user.email).toBe("plain@example.com");
-      expect(user.role).toBe("authenticated");
+      expect(user.role).toBe("user");
     });
   });
 
