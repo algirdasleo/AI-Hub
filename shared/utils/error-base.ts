@@ -1,13 +1,14 @@
 import { ErrorType } from "./error-type.js";
+
 export class ErrorBase<T extends ErrorType = ErrorType> extends Error {
   type: T;
   message: string;
-  cause?: any;
+  details?: unknown;
 
-  constructor({ type, message, cause }: { type: T; message: string; cause?: any }) {
+  constructor({ type, message, details }: { type: T; message: string; details?: unknown }) {
     super();
     this.type = type;
     this.message = message;
-    this.cause = cause;
+    this.details = details;
   }
 }

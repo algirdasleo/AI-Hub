@@ -32,7 +32,7 @@ export async function streamResponse(
     return Result.fail({
       type: ErrorType.InternalServerError,
       message: "Failed to stream chat response",
-      cause: error,
+      details: error,
     });
   }
 }

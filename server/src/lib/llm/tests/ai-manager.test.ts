@@ -120,7 +120,7 @@ describe("ai-manager", () => {
       expect(result.isSuccess).toBe(false);
       expect(result.error.type).toBe(ErrorType.InternalServerError);
       expect(result.error.message).toBe("Failed to stream chat response");
-      expect(result.error.cause).toBeInstanceOf(Error);
+      expect(result.error.details).toBeInstanceOf(Error);
     });
 
     it("should use default parameters", async () => {

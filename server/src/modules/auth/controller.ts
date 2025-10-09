@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { setAuthCookies, createUserFromSupabase, clearAuthCookies } from "@server/utils/auth.js";
+import { setAuthCookies, createUserFromSupabase, clearAuthCookies } from "@server/utils/index.js";
 import { SignupResponseDTO, LoginResponseDTO, LogoutResponseDTO } from "@shared/types/auth/index.js";
 import { ErrorResponseDTO } from "@shared/types/core/index.js";
 
@@ -12,7 +12,7 @@ export async function signup(req: Request, res: Response) {
     return res.status(400).json({
       success: false,
       type: result.error.message,
-      cause: result.error.cause,
+      details: result.error.details,
     } as ErrorResponseDTO);
   }
 

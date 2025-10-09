@@ -1,6 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import { Response } from "express";
-import { AuthRequest } from "@server/modules/auth/types.js";
+import { AuthRequest } from "@server/modules/auth/index.js";
+
+vi.mock("jose", () => ({
+  jwtVerify: vi.fn(),
+  createRemoteJWKSet: vi.fn().mockReturnValue({}),
+}));
 
 vi.mock("@server/db/supabase.js", () => ({
   supabaseServer: {
@@ -10,25 +15,27 @@ vi.mock("@server/db/supabase.js", () => ({
   },
 }));
 
-vi.mock("@server/utils/auth.js", () => ({
+vi.mock("@server/utils/index.js", () => ({
   createUserFromJWT: vi.fn().mockReturnValue({ id: "jwt-user", email: "jwt@test.com" }),
   createUserFromSupabase: vi.fn().mockReturnValue({ id: "supabase-user", email: "supabase@test.com" }),
   setAuthCookies: vi.fn(),
-}));
-
-vi.mock("jose/jwt/verify", () => ({
-  jwtVerify: vi.fn(),
+  clearAuthCookies: vi.fn(),
 }));
 
 import { supabaseServer } from "@server/db/supabase.js";
-import { setAuthCookies } from "@server/utils/auth.js";
-import { jwtVerify } from "jose/jwt/verify";
+import { setAuthCookies } from "@server/utils/index.js";
+import { jwtVerify } from "jose";
 
 import { authMiddleware } from "../auth-middleware.js";
 
 describe("authMiddleware", () => {
   const mockReq = () => ({ cookies: {}, user: undefined }) as Partial<AuthRequest>;
-  const mockRes = () => ({ status: vi.fn().mockReturnThis(), json: vi.fn() }) as Partial<Response>;
+  const mockRes = () =>
+    ({
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+      clearCookie: vi.fn(),
+    }) as Partial<Response>;
   const mockNext = vi.fn();
 
   beforeEach(() => vi.clearAllMocks());

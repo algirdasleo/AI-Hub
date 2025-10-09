@@ -14,7 +14,7 @@ export class Result<T, E extends ErrorBase = ErrorBase> {
   static fail<T extends ErrorType = ErrorType>(params: {
     type: T;
     message: string;
-    cause?: any;
+    details?: unknown;
   }): Result<never, ErrorBase<T>> {
     const error = new ErrorBase(params);
     return new Result<never, ErrorBase<T>>(false, undefined, error);

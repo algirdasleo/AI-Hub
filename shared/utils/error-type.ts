@@ -6,6 +6,7 @@ export const ErrorType = {
   Unauthorized: "Unauthorized",
   StreamError: "StreamError",
   StreamToolError: "StreamToolError",
+  DatabaseError: "DatabaseError",
 } as const;
 
 export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType];

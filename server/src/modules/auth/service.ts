@@ -1,5 +1,5 @@
 import { supabaseServer } from "@server/db/supabase.js";
-import { LoginRequestDTO, SignupRequestDTO } from "@shared/types/auth/index.js";
+import { LoginRequestDTO, SignupRequestDTO, SubscriptionTier, UserRole } from "@shared/types/auth/index.js";
 import { ErrorType } from "@shared/utils/error-type.js";
 import { Result } from "@shared/utils/result.js";
 
@@ -15,11 +15,21 @@ export class AuthService {
       },
     });
 
-    if (error)
+    const { error: metadataError } = await supabaseServer.auth.admin.updateUserById(data.user?.id || "", {
+      user_metadata: {
+        display_name: req.username || email.split("@")[0],
+        role: UserRole.USER,
+      },
+      app_metadata: {
+        subscription_tier: SubscriptionTier.FREE,
+      },
+    });
+
+    if (error || metadataError)
       return Result.fail({
         type: ErrorType.InternalServerError,
         message: "Failed to create account",
-        cause: error,
+        details: error || metadataError,
       });
 
     return Result.okVoid();
@@ -37,7 +47,7 @@ export class AuthService {
       return Result.fail({
         type: ErrorType.InternalServerError,
         message: "Login failed",
-        cause: error.message,
+        details: error.message,
       });
 
     return Result.ok(data);

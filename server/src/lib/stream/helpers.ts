@@ -1,12 +1,12 @@
 import { Response } from "express";
-import { ErrorType } from "@shared/utils/error-type.js";
-import { TimeToFirstToken } from "@shared/types/chat/statistics/time-to-first-token.js";
 import { LanguageModelV2Usage } from "@ai-sdk/provider";
 import {
   ModelStreamErrorData,
-  ModelStreamFirstTokenData,
+  ModelStreamLatencyData,
   ModelStreamTextData,
+  ModelStreamUsageData,
 } from "@shared/types/comparison/model-stream-data.js";
+import { EventType } from "@shared/types/core/event-types.js";
 
 export function setupStreamHeaders(res: Response) {
   res.setHeader("Content-Type", "text/event-stream");
@@ -16,27 +16,22 @@ export function setupStreamHeaders(res: Response) {
 }
 
 export function sendStreamComplete(res: Response) {
-  res.write(`event: complete\ndata: [DONE]\n\n`);
+  res.write(`event: ${EventType.COMPLETE}\ndata: [DONE]\n\n`);
   res.end();
 }
 
 export function sendModelError(res: Response, payload: ModelStreamErrorData) {
-  res.write(`event: model-error\ndata: ${JSON.stringify(payload)}\n\n`);
+  res.write(`event: ${EventType.ERROR}\ndata: ${JSON.stringify(payload)}\n\n`);
 }
 
 export function sendModelText(res: Response, payload: ModelStreamTextData) {
-  res.write(`event: model-text\ndata: ${JSON.stringify(payload)}\n\n`);
+  res.write(`event: ${EventType.TEXT}\ndata: ${JSON.stringify(payload)}\n\n`);
 }
 
-export function sendModelFirstToken(res: Response, payload: ModelStreamFirstTokenData) {
-  res.write(`event: model-first-token\ndata: ${JSON.stringify(payload)}\n\n`);
+export function sendLatencyMs(res: Response, payload: ModelStreamLatencyData) {
+  res.write(`event: ${EventType.LATENCY_MS}\ndata: ${JSON.stringify(payload)}\n\n`);
 }
 
-export function endModelStream(res: Response) {
-  res.write(`event: model-stream-end\ndata: [DONE]\n\n`);
-  res.end();
-}
-
-export function sendUsage(res: Response, modelId: string, usage: LanguageModelV2Usage) {
-  res.write(`event: usage\ndata: ${JSON.stringify({ modelId, usage })}\n\n`);
+export function sendUsage(res: Response, payload: ModelStreamUsageData) {
+  res.write(`event: ${EventType.USAGE}\ndata: ${JSON.stringify(payload)}\n\n`);
 }

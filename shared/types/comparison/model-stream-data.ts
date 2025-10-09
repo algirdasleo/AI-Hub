@@ -1,5 +1,6 @@
 import z from "zod";
 import { ErrorType } from "@shared/utils/index.js";
+import { EventType } from "@shared/types/core/index.js";
 
 export const ModelStreamBaseDataSchema = z.strictObject({
   modelId: z.string().min(1),
@@ -7,11 +8,11 @@ export const ModelStreamBaseDataSchema = z.strictObject({
 
 export type ModelStreamBaseData = z.infer<typeof ModelStreamBaseDataSchema>;
 
-export const ModelStreamFirstTokenDataSchema = ModelStreamBaseDataSchema.extend({
+export const ModelStreamLatencyDataSchema = ModelStreamBaseDataSchema.extend({
   ms: z.number().min(0),
 });
 
-export type ModelStreamFirstTokenData = z.infer<typeof ModelStreamFirstTokenDataSchema>;
+export type ModelStreamLatencyData = z.infer<typeof ModelStreamLatencyDataSchema>;
 
 export const ModelStreamTextDataSchema = ModelStreamBaseDataSchema.extend({
   text: z.string(),
@@ -26,21 +27,29 @@ export const ModelStreamErrorDataSchema = ModelStreamBaseDataSchema.extend({
 
 export type ModelStreamErrorData = z.infer<typeof ModelStreamErrorDataSchema>;
 
+export const ModelStreamUsageDataSchema = ModelStreamBaseDataSchema.extend({
+  inputTokens: z.number().min(0),
+  outputTokens: z.number().min(0),
+  totalTokens: z.number().min(0),
+});
+
+export type ModelStreamUsageData = z.infer<typeof ModelStreamUsageDataSchema>;
+
 export const ModelStreamDTO = z.discriminatedUnion("event", [
   z
     .strictObject({
-      event: z.literal("model-text"),
+      event: z.literal(EventType.TEXT),
     })
     .extend(ModelStreamTextDataSchema),
 
   z
     .strictObject({
-      event: z.literal("model-first-token"),
+      event: z.literal(EventType.LATENCY_MS),
     })
-    .extend(ModelStreamFirstTokenDataSchema),
+    .extend(ModelStreamLatencyDataSchema),
   z
     .strictObject({
-      event: z.literal("model-error"),
+      event: z.literal(EventType.ERROR),
     })
     .extend(ModelStreamErrorDataSchema),
 ]);

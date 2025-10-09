@@ -22,7 +22,9 @@ const BaseAuthSchema = z.strictObject({
   password: passwordSchema,
 });
 
-export const SignupRequestSchema = BaseAuthSchema.extend({});
+export const SignupRequestSchema = BaseAuthSchema.extend({
+  username: z.string().min(3).max(30).optional(),
+});
 export const LoginRequestSchema = BaseAuthSchema.extend({});
 
 export type SignupRequestDTO = z.infer<typeof SignupRequestSchema>;

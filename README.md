@@ -51,8 +51,14 @@ AI Hub is a platform that allows users to interact with multiple AI models, comp
 
 1. Run `npm install` to install dependencies.
 
-2. Run `npm run dev` to start the project in development mode.
+2. Create .env files in both `backend` and `frontend` folders based on the provided `.env.example` files.
 
-3. Create .env files in both `backend` and `frontend` folders based on the provided `.env.example` files.
+3. To setup Supabase database, create a free account at [supabase.com](https://supabase.com) and create a new project. Then copy the supabase database URL and secret key to '.env' file. In order for the auth providers to work, connect them by navigating to Dashboard -> Authentication -> Sign In/Providers.
 
-4. To setup Supabase database, create a free account at [supabase.com](https://supabase.com) and create a new project. Then copy the supabase database URL and secret key to '.env' file. In order for the auth providers to work, connect them by navigating to Dashboard -> Authentication -> Sign In/Providers.
+4. To setup Supabase CLI access, run:
+   - Install Supabase CLI by following instructions [here](https://supabase.com/docs/guides/local-development/cli/getting-started?queryGroups=platform&platform=macos#installing-the-supabase-cli)
+   - `supabase login` in the terminal and follow the instructions to login via browser.
+   - After logging in, run `supabase link` to link your local project to the one you created in Supabase.
+   - Finally, run `supabase db push` to create the necessary tables in your database.
+
+5. Launch the project in development mode by running `npm run dev` in the root folder.

@@ -1,18 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { AuthService } from "../service.js";
-
-import { ErrorType } from "@shared/utils/error-type.js";
+vi.mock("@shared/types/auth/index.js", () => ({
+  UserRole: { USER: "user", ADMIN: "admin" },
+  SubscriptionTier: { FREE: "free", PREMIUM: "premium" },
+}));
 
 vi.mock("@server/db/supabase.js", () => ({
   supabaseServer: {
     auth: {
       signUp: vi.fn(),
       signInWithPassword: vi.fn(),
+      admin: {
+        updateUserById: vi.fn(),
+      },
     },
   },
 }));
 
+import { AuthService } from "../service.js";
+import { ErrorType } from "@shared/utils/error-type.js";
 import { supabaseServer } from "@server/db/supabase.js";
 
 describe("AuthService", () => {
@@ -34,6 +40,11 @@ describe("AuthService", () => {
         error: null,
       });
 
+      mockAuth.admin.updateUserById.mockResolvedValue({
+        data: { user: { id: "123" } },
+        error: null,
+      });
+
       const result = await AuthService.signup(signupData);
 
       expect(result.isSuccess).toBe(true);
@@ -44,12 +55,18 @@ describe("AuthService", () => {
           emailRedirectTo: `${process.env.NEXT_PUBLIC_URL}/auth/callback`,
         },
       });
+      expect(mockAuth.admin.updateUserById).toHaveBeenCalled();
     });
 
     it("should handle signup errors", async () => {
       mockAuth.signUp.mockResolvedValue({
-        data: null,
+        data: { user: null },
         error: { message: "Email already exists" },
+      });
+
+      mockAuth.admin.updateUserById.mockResolvedValue({
+        data: null,
+        error: null,
       });
 
       const result = await AuthService.signup(signupData);
@@ -98,7 +115,7 @@ describe("AuthService", () => {
       expect(result.isSuccess).toBe(false);
       expect(result.error.type).toBe(ErrorType.InternalServerError);
       expect(result.error.message).toBe("Login failed");
-      expect(result.error.cause).toBe("Invalid credentials");
+      expect(result.error.details).toBe("Invalid credentials");
     });
   });
 });

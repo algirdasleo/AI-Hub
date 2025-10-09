@@ -5,9 +5,9 @@ import { AIProvider } from "@shared/config/index.js";
 import { ErrorType, Result } from "@shared/utils/index.js";
 import { TextStreamPart, ToolSet } from "ai";
 import { Response } from "express";
-import { ModelStreamBaseData, ModelStreamFirstTokenData } from "@shared/types/comparison/model-stream-data.js";
-import { buildErrorPayload, buildTextPayload } from "@server/lib/stream/payloads.js";
-import { sendModelError, sendModelText, sendModelFirstToken } from "@server/lib/stream/helpers.js";
+import { ModelStreamBaseData, ModelStreamLatencyData } from "@shared/types/comparison/model-stream-data.js";
+import { buildErrorPayload, buildLatencyMsPayload, buildTextPayload } from "@server/lib/stream/payloads.js";
+import { sendModelError, sendModelText, sendLatencyMs } from "@server/lib/stream/helpers.js";
 
 export const PROVIDER_CLIENTS = {
   [AIProvider.OpenAI]: openai,
@@ -67,8 +67,8 @@ export function handleStreamPart(
   switch (part.type) {
     case "text-delta": {
       if (!firstTokenSent) {
-        const ms = Date.now() - start;
-        sendModelFirstToken(res, { modelId, ms } as ModelStreamFirstTokenData);
+        const latencyMs = Date.now() - start;
+        sendLatencyMs(res, buildLatencyMsPayload(modelId, latencyMs));
         firstTokenSent = true;
       }
 

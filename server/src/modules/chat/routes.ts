@@ -1,11 +1,13 @@
-import { validateBody } from "@server/middleware/validate-body.js";
 import { Router } from "express";
 import { ChatStreamSchema } from "@shared/types/chat/index.js";
-
-import { streamChat } from "./controller.js";
+import { validateBody, authMiddleware } from "@server/middleware/index.js";
+import { createChatJob, streamChatByUid, getConversations, getMessages } from "./controller.js";
 
 const router = Router();
 
-router.post("/", validateBody(ChatStreamSchema), streamChat);
+router.post("/job", authMiddleware, validateBody(ChatStreamSchema), createChatJob);
+router.get("/stream", authMiddleware, streamChatByUid);
+router.get("/conversations", authMiddleware, getConversations);
+router.get("/conversations/:conversationId/messages", authMiddleware, getMessages);
 
-export default router;
+export const chatRouter = router;

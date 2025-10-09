@@ -13,7 +13,7 @@ vi.mock("../service.js", () => ({
   },
 }));
 
-vi.mock("@server/utils/auth.js", () => ({
+vi.mock("@server/utils/index.js", () => ({
   setAuthCookies: vi.fn(),
   clearAuthCookies: vi.fn().mockImplementation((res: any) => {
     if (res && typeof res.clearCookie === "function") {
@@ -24,7 +24,7 @@ vi.mock("@server/utils/auth.js", () => ({
   createUserFromSupabase: vi.fn().mockReturnValue({ id: "123", email: "test@example.com" }),
 }));
 
-import { setAuthCookies } from "@server/utils/auth.js";
+import { setAuthCookies } from "@server/utils/index.js";
 
 import { signup, login, logout } from "../controller.js";
 
@@ -67,7 +67,7 @@ describe("Auth Controller", () => {
         Result.fail({
           type: ErrorType.InternalServerError,
           message: "Failed to create account",
-          cause: "Email exists",
+          details: "Email exists",
         }),
       );
 
@@ -77,7 +77,7 @@ describe("Auth Controller", () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         success: false,
         type: "Failed to create account",
-        cause: "Email exists",
+        details: "Email exists",
       });
     });
   });
@@ -109,7 +109,7 @@ describe("Auth Controller", () => {
         Result.fail({
           type: ErrorType.InternalServerError,
           message: "Login failed",
-          cause: "Invalid credentials",
+          details: "Invalid credentials",
         }),
       );
 

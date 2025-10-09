@@ -1,54 +1,79 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-import { extractModelsData, startMultiModelStream } from "../service.js";
-
+import { AIProvider } from "@shared/config/index.js";
 import { Result } from "@shared/utils/result.js";
 
-vi.mock("@server/lib/llm/streaming.js", () => ({
-  streamMultipleModels: vi.fn(),
+vi.mock("../repository.js", () => ({
+  createComparisonConversation: vi.fn(),
+  insertComparisonPrompt: vi.fn(),
+  insertComparisonOutput: vi.fn(),
+  insertComparisonOutputStats: vi.fn(),
+  updateUsageAggregates: vi.fn(),
 }));
+vi.mock("@server/lib/llm/streaming.js", () => ({ streamMultipleModels: vi.fn() }));
+vi.mock("@server/lib/stream/helpers.js", () => ({ setupStreamHeaders: vi.fn(), sendStreamComplete: vi.fn() }));
 
+import { createComparisonConversation, insertComparisonPrompt, insertComparisonOutput } from "../repository.js";
 import { streamMultipleModels } from "@server/lib/llm/streaming.js";
+import { createComparisonJobPayload, executeComparisonStream } from "../service.js";
 
 describe("comparison service", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  beforeEach(() => vi.clearAllMocks());
 
-  it("extractModelsData returns parsed models for valid params", async () => {
-    const params = {
-      models: [
-        {
-          provider: "OpenAI",
-          modelId: "gpt-4",
-          settings: {},
-          messages: [{ id: "1", role: "user", parts: [{ type: "text", text: "hi" }] }],
-        },
-      ],
-      systemPrompt: "helpful",
+  describe("createComparisonJobPayload", () => {
+    const mockParams = {
+      prompt: "Compare",
+      models: [{ provider: AIProvider.OpenAI, modelId: "gpt-4", settings: {} }],
       useWebSearch: false,
-    } as any;
+    };
 
-    const result = await extractModelsData(params);
+    it("creates conversation, uses existing, and handles errors", async () => {
+      (createComparisonConversation as any).mockResolvedValue(Result.ok({ id: "conv-123" }));
+      (insertComparisonPrompt as any).mockResolvedValue(Result.ok({ id: "prompt-456" }));
 
-    expect(result.isSuccess).toBe(true);
-    expect((result.value as any).parsedModels).toBeDefined();
+      let result = await createComparisonJobPayload("user-789", mockParams);
+      expect(result.value.conversationId).toBe("conv-123");
+      expect(result.value.promptId).toBe("prompt-456");
+
+      result = await createComparisonJobPayload("user-123", { ...mockParams, conversationId: "existing-conv" });
+      expect(result.value.conversationId).toBe("existing-conv");
+
+      (createComparisonConversation as any).mockResolvedValue(
+        Result.fail({ type: "DatabaseError", message: "Failed" }),
+      );
+      result = await createComparisonJobPayload("user-123", mockParams);
+      expect(result.error.message).toBe("Failed to create comparison conversation");
+
+      (createComparisonConversation as any).mockResolvedValue(Result.ok({ id: "conv-123" }));
+      (insertComparisonPrompt as any).mockResolvedValue(
+        Result.fail({ type: "DatabaseError", message: "Failed to insert prompt" }),
+      );
+      result = await createComparisonJobPayload("user-123", mockParams);
+      expect(result.error.message).toBe("Failed to create comparison prompt");
+    });
   });
 
-  it("startMultiModelStream calls streamMultipleModels with transformed models", async () => {
+  describe("executeComparisonStream", () => {
     const mockRes: any = { write: vi.fn(), end: vi.fn(), setHeader: vi.fn() };
+    const mockParams = {
+      conversationId: "conv-123",
+      promptId: "prompt-456",
+      prompt: "Compare",
+      models: [{ provider: AIProvider.OpenAI, modelId: "gpt-4", settings: {} }],
+      useWebSearch: false,
+    };
 
-    (streamMultipleModels as any).mockResolvedValue(Result.ok(undefined));
+    it("streams successfully and handles errors", async () => {
+      (streamMultipleModels as any).mockResolvedValue([
+        { status: "fulfilled", value: { success: true, usage: { totalTokens: 100 }, content: "Response 1" } },
+      ]);
+      (insertComparisonOutput as any).mockResolvedValue(Result.ok({ id: "output-1" }));
 
-    const validatedModels = [
-      {
-        selectedModel: { provider: "openai", modelId: "gpt-4", settings: {} },
-        modelMessages: [{ type: "message", role: "user", content: [{ type: "text", text: "hi" }] }],
-      },
-    ];
+      let result = await executeComparisonStream(mockRes, mockParams, "user-123");
+      expect(result.isSuccess).toBe(true);
 
-    await startMultiModelStream(mockRes as any, validatedModels as any, "prompt", false);
-
-    expect(streamMultipleModels).toHaveBeenCalled();
+      (streamMultipleModels as any).mockRejectedValue(new Error("Stream failed"));
+      result = await executeComparisonStream(mockRes, mockParams, "user-123");
+      expect(result.error.type).toBe("InternalServerError");
+    });
   });
 });

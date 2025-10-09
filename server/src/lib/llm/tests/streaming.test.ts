@@ -63,8 +63,8 @@ describe("streaming", () => {
     });
 
     const results = await streamMultipleModels(mockRes as any, [
-      { selectedModel: {}, modelMessages: [], modelInfo: { modelId: "m1", index: 0 } },
-      { selectedModel: {}, modelMessages: [], modelInfo: { modelId: "m2", index: 1 } },
+      { selectedModel: {}, modelMessages: [], modelInfo: { modelId: "m1" } },
+      { selectedModel: {}, modelMessages: [], modelInfo: { modelId: "m2" } },
     ]);
 
     expect(Array.isArray(results)).toBe(true);

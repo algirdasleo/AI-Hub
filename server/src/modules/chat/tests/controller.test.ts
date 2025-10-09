@@ -1,115 +1,166 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Result } from "@shared/utils/result.js";
+import { AuthRequest } from "@server/modules/auth/index.js";
 
-import { streamChat } from "../controller.js";
+vi.stubEnv("REDIS_URL", "redis://localhost:6379");
 
-vi.mock("../service.js", () => ({
-  startChatStream: vi.fn(),
+vi.mock("@shared/types/chat/index.js", () => ({
+  ChatStreamSchema: { safeParse: vi.fn((d) => ({ success: true, data: d })), extend: vi.fn().mockReturnThis() },
+}));
+vi.mock("../service.js", () => ({ createChatJobPayload: vi.fn(), executeChatStream: vi.fn() }));
+vi.mock("../repository.js", () => ({ getUserConversations: vi.fn(), getConversationMessages: vi.fn() }));
+vi.mock("@server/lib/job-store.js", () => ({ createJob: vi.fn(), getJob: vi.fn(), deleteJob: vi.fn() }));
+vi.mock("@server/utils/index.js", () => ({
+  validateAuth: vi.fn(),
+  sendUnauthorized: vi.fn(),
+  sendBadRequest: vi.fn(),
+  sendInternalError: vi.fn(),
+  sendNotFound: vi.fn(),
+  getUidFromQuery: vi.fn(),
+}));
+vi.mock("@server/lib/stream/index.js", () => ({
+  sendModelError: vi.fn(),
+  buildErrorPayload: vi.fn((type, msg, errType) => ({ type, message: msg, errorType: errType })),
 }));
 
-import { startChatStream } from "../service.js";
-
-vi.mock("@server/lib/llm/streaming.js", () => ({
-  streamModel: vi.fn(),
-}));
-
-import { streamModel } from "@server/lib/llm/streaming.js";
+import { createChatJobPayload, executeChatStream } from "../service.js";
+import { getUserConversations, getConversationMessages } from "../repository.js";
+import { createJob, getJob, deleteJob } from "@server/lib/job-store.js";
+import {
+  validateAuth,
+  sendUnauthorized,
+  sendInternalError,
+  sendBadRequest,
+  sendNotFound,
+  getUidFromQuery,
+} from "@server/utils/index.js";
+import { createChatJob, streamChatByUid, getConversations, getMessages } from "../controller.js";
+import { sendModelError } from "@server/lib/stream/index.js";
 
 describe("chat controller", () => {
-  let mockReq: any;
-  let mockRes: any;
-  const mockStartChatStream = startChatStream as any;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-
-    mockReq = { body: { messages: [], model: {} } };
-    mockRes = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-      setHeader: vi.fn(),
-      write: vi.fn(),
-      end: vi.fn(),
-    };
+  const mockRes = () => ({
+    status: vi.fn().mockReturnThis(),
+    json: vi.fn(),
+    setHeader: vi.fn(),
+    write: vi.fn(),
+    end: vi.fn(),
   });
+  const mockUser = {
+    id: "user-123",
+    email: "test@test.com",
+    role: "user" as any,
+    display_name: "Test",
+    subscription_tier: "free" as any,
+  };
 
-  it("handles service failure", async () => {
-    mockStartChatStream.mockResolvedValue(Result.fail({ type: "InvalidParameters", message: "bad input" }));
+  beforeEach(() => vi.clearAllMocks());
 
-    await streamChat(mockReq, mockRes);
+  describe("createChatJob", () => {
+    it("creates job and handles errors", async () => {
+      const res = mockRes();
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      (createChatJobPayload as any).mockResolvedValue(Result.ok({ conversationId: "conv-123" }));
+      (createJob as any).mockResolvedValue("job-uid");
 
-    expect(mockRes.status).toHaveBeenCalledWith(500);
-    expect(mockRes.json).toHaveBeenCalledWith({
-      error: "bad input",
-      type: "InvalidParameters",
-    });
-  });
-
-  it("handles successful stream", async () => {
-    mockStartChatStream.mockResolvedValue(
-      Result.ok({
-        selectedModel: { modelId: "m1" },
-        modelMessages: [],
-        systemPrompt: undefined,
-        useWebSearch: false,
-      }),
-    );
-
-    (streamModel as any).mockImplementation(async (res: any) => {
-      res.write("event: text\ndata: hello\n\n");
-      res.end();
-      return { success: true };
-    });
-
-    await streamChat(mockReq, mockRes);
-
-    expect(mockRes.setHeader).toHaveBeenCalledWith("Content-Type", "text/event-stream");
-    expect(mockRes.write).toHaveBeenCalledWith("event: text\ndata: hello\n\n");
-    expect(mockRes.end).toHaveBeenCalled();
-  });
-
-  it("handles stream errors", async () => {
-    mockStartChatStream.mockResolvedValue(
-      Result.ok({
-        selectedModel: { modelId: "m1" },
-        modelMessages: [],
-        systemPrompt: undefined,
-        useWebSearch: false,
-      }),
-    );
-
-    (streamModel as any).mockImplementation(async (res: any) => {
-      res.write(
-        `event: model-error\ndata: ${JSON.stringify({ modelId: "m1", index: 0, error: "stream failed", errorType: "StreamError" })}\n\n`,
+      await createChatJob(
+        { body: { prompt: "Hi", provider: "OpenAI", modelId: "gpt-4" }, user: mockUser } as any,
+        res as any,
       );
-      return { success: false };
+      expect(res.json).toHaveBeenCalledWith({ uid: "job-uid" });
+
+      (validateAuth as any).mockReturnValue({ isValid: false });
+      await createChatJob({ user: mockUser } as any, mockRes() as any);
+      expect(sendUnauthorized).toHaveBeenCalled();
+
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      (createChatJobPayload as any).mockResolvedValue(Result.fail({ type: "DatabaseError", message: "Fail" }));
+      await createChatJob(
+        { body: { prompt: "Hi", provider: "OpenAI", modelId: "gpt-4" }, user: mockUser } as any,
+        mockRes() as any,
+      );
+      expect(sendInternalError).toHaveBeenCalled();
     });
-
-    await streamChat(mockReq, mockRes);
-
-    expect(mockRes.write).toHaveBeenCalledWith(
-      `event: model-error\ndata: ${JSON.stringify({ modelId: "m1", index: 0, error: "stream failed", errorType: "StreamError" })}\n\n`,
-    );
   });
 
-  it("handles stream unexpected exceptions", async () => {
-    mockStartChatStream.mockResolvedValue(
-      Result.ok({
-        selectedModel: { modelId: "m1" },
-        modelMessages: [],
-        systemPrompt: undefined,
-        useWebSearch: false,
-      }),
-    );
+  describe("streamChatByUid", () => {
+    it("streams and handles errors", async () => {
+      (getUidFromQuery as any).mockReturnValue("uid");
+      (getJob as any).mockResolvedValue({
+        prompt: "Hi",
+        provider: "OpenAI",
+        modelId: "gpt-4",
+        conversationId: "conv",
+      });
+      (executeChatStream as any).mockResolvedValue(Result.ok({}));
 
-    (streamModel as any).mockImplementation(async () => {
-      throw new Error("unexpected error");
+      await streamChatByUid({ user: mockUser } as any, mockRes() as any);
+      expect(deleteJob).toHaveBeenCalledWith("uid");
+
+      (getUidFromQuery as any).mockReturnValue(null);
+      await streamChatByUid({ user: mockUser } as any, mockRes() as any);
+      expect(sendBadRequest).toHaveBeenCalled();
+
+      (getUidFromQuery as any).mockReturnValue("uid");
+      (getJob as any).mockResolvedValue(undefined);
+      await streamChatByUid({ user: mockUser } as any, mockRes() as any);
+      expect(sendNotFound).toHaveBeenCalled();
+
+      (getJob as any).mockResolvedValue({
+        prompt: "Hi",
+        provider: "OpenAI",
+        modelId: "gpt-4",
+        conversationId: "conv",
+      });
+      await streamChatByUid({} as any, mockRes() as any);
+      expect(sendUnauthorized).toHaveBeenCalled();
+
+      (executeChatStream as any).mockResolvedValue(Result.fail({ type: "InternalServerError", message: "Fail" }));
+      await streamChatByUid({ user: mockUser } as any, mockRes() as any);
+      expect(sendModelError).toHaveBeenCalled();
     });
+  });
 
-    await streamChat(mockReq, mockRes);
+  describe("getConversations", () => {
+    it("returns conversations and handles errors", async () => {
+      const res = mockRes();
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      (getUserConversations as any).mockResolvedValue(Result.ok([{ id: "conv-1" }]));
 
-    expect(mockRes.write).toHaveBeenCalledWith(
-      `event: model-error\ndata: ${JSON.stringify({ error: String(new Error("unexpected error")), errorType: "InternalServerError" })}\n\n`,
-    );
+      await getConversations({ user: mockUser } as any, res as any);
+      expect(res.json).toHaveBeenCalledWith([{ id: "conv-1" }]);
+
+      (getUserConversations as any).mockRejectedValue(new Error("Fail"));
+      await getConversations({ user: mockUser } as any, mockRes() as any);
+      expect(sendInternalError).toHaveBeenCalled();
+    });
+  });
+
+  describe("getMessages", () => {
+    it("returns messages and handles errors", async () => {
+      const res = mockRes();
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      (getConversationMessages as any).mockResolvedValue(Result.ok([{ id: "msg-1" }]));
+
+      await getMessages({ user: mockUser, params: { conversationId: "conv-123" } } as any, res as any);
+      expect(res.json).toHaveBeenCalledWith([{ id: "msg-1" }]);
+
+      (validateAuth as any).mockReturnValue({ isValid: false });
+      await getMessages({ user: mockUser, params: { conversationId: "conv-123" } } as any, mockRes() as any);
+      expect(sendUnauthorized).toHaveBeenCalled();
+
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      await getMessages({ user: mockUser, params: {} } as any, mockRes() as any);
+      expect(sendBadRequest).toHaveBeenCalled();
+
+      (getConversationMessages as any).mockResolvedValue(Result.fail({ type: "NotFound", message: "Not found" }));
+      await getMessages({ user: mockUser, params: { conversationId: "conv-123" } } as any, mockRes() as any);
+      expect(sendNotFound).toHaveBeenCalled();
+
+      (getConversationMessages as any).mockResolvedValue(
+        Result.fail({ type: "DatabaseError", message: "DB error" }),
+      );
+      await getMessages({ user: mockUser, params: { conversationId: "conv-123" } } as any, mockRes() as any);
+      expect(sendInternalError).toHaveBeenCalled();
+    });
   });
 });

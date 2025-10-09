@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { authRouter } from "@server/modules/auth/index.js";
 import { chatRouter } from "@server/modules/chat/index.js";
-import { comparisonRouter } from "@server/modules/comparison/routes.js";
+import { comparisonRouter } from "@server/modules/comparison/index.js";
 
 const app = express();
 

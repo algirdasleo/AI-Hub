@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Response } from "express";
-import { SupabaseJWTPayload } from "@server/modules/auth/types.js";
-
-import { createUserFromJWT, createUserFromSupabase, setAuthCookies } from "../auth.js";
+import { SupabaseJWTPayload } from "@server/modules/auth/index.js";
 
 vi.mock("@shared/types/auth/index.js", () => ({
   UserSchema: {
@@ -19,6 +17,9 @@ vi.mock("@shared/types/auth/index.js", () => ({
   },
 }));
 
+import { createUserFromJWT, createUserFromSupabase, setAuthCookies, clearAuthCookies } from "../auth.js";
+import type { UserRole } from "@shared/types/auth/index.js";
+
 describe("Auth Utils", () => {
   describe("createUserFromJWT", () => {
     const mockJWTPayload: SupabaseJWTPayload = {
@@ -30,6 +31,7 @@ describe("Auth Utils", () => {
       iat: 1234567890,
       user_metadata: {
         display_name: "Test User",
+        role: "user" as UserRole,
       },
       app_metadata: {
         subscription_tier: "free",
@@ -42,7 +44,7 @@ describe("Auth Utils", () => {
       expect(user).toEqual({
         id: "user123",
         email: "test@example.com",
-        role: "authenticated",
+        role: "user",
         display_name: "Test User",
         subscription_tier: "free",
       });
@@ -182,6 +184,24 @@ describe("Auth Utils", () => {
 
       expect(mockRes.cookie).toHaveBeenCalledWith("sb-access-token", "test-token", expectedOptions);
       expect(mockRes.cookie).toHaveBeenCalledWith("sb-refresh-token", "test-refresh", expectedOptions);
+    });
+  });
+
+  describe("clearAuthCookies", () => {
+    let mockRes: Partial<Response>;
+
+    beforeEach(() => {
+      mockRes = {
+        clearCookie: vi.fn(),
+      };
+    });
+
+    it("should clear both access and refresh token cookies", () => {
+      clearAuthCookies(mockRes as Response);
+
+      expect(mockRes.clearCookie).toHaveBeenCalledWith("sb-access-token");
+      expect(mockRes.clearCookie).toHaveBeenCalledWith("sb-refresh-token");
+      expect(mockRes.clearCookie).toHaveBeenCalledTimes(2);
     });
   });
 });

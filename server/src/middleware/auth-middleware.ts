@@ -1,12 +1,16 @@
-import { supabaseServer } from "@server/db/supabase.js";
-import { AuthRequest, SupabaseJWTPayload } from "@server/modules/auth/types.js";
-import { createUserFromJWT, createUserFromSupabase, setAuthCookies } from "@server/utils/auth.js";
-import { ErrorResponseDTO } from "@shared/types/core/index.js";
-import { ErrorType } from "@shared/utils/error-type.js";
 import { Response, NextFunction } from "express";
-import { jwtVerify } from "jose/jwt/verify";
+import { jwtVerify, createRemoteJWKSet } from "jose";
+import { ErrorType } from "@shared/utils/error-type.js";
+import { ErrorResponseDTO } from "@shared/types/core/index.js";
+import { supabaseServer } from "@server/db/supabase.js";
+import { AuthRequest, SupabaseJWTPayload } from "@server/modules/auth/index.js";
+import { createUserFromJWT, createUserFromSupabase, setAuthCookies } from "@server/utils/index.js";
 
-const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET!;
+if (!process.env.SUPABASE_URL) {
+  throw new Error("SUPABASE_URL environment variable must be set");
+}
+
+const JWKS = createRemoteJWKSet(new URL(`${process.env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`));
 
 export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   const { "sb-access-token": accessToken, "sb-refresh-token": refreshToken } = req.cookies;
@@ -16,18 +20,20 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
   }
 
   try {
-    const { payload } = await jwtVerify(accessToken, new TextEncoder().encode(SUPABASE_JWT_SECRET));
+    const { payload } = await jwtVerify(accessToken, JWKS);
     const jwtPayload = payload as SupabaseJWTPayload;
 
-    const isExpired = (jwtPayload.exp || 0) <= Math.floor(Date.now() / 1000);
+    const now = Math.floor(Date.now() / 1000);
+    const isExpired = (jwtPayload.exp || 0) <= now;
 
     if (isExpired) {
       const { data, error } = await supabaseServer.auth.refreshSession({
         refresh_token: refreshToken,
       });
-
       if (error || !data.session) {
-        return res.status(401).json({ type: ErrorType.Unauthorized, message: error?.message } as ErrorResponseDTO);
+        res.clearCookie("sb-access-token");
+        res.clearCookie("sb-refresh-token");
+        return res.status(401).json({ type: ErrorType.Unauthorized });
       }
 
       setAuthCookies(res, data.session.access_token, data.session.refresh_token);
@@ -37,7 +43,9 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     }
 
     next();
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid token" });
+  } catch (err: any) {
+    res.clearCookie("sb-access-token");
+    res.clearCookie("sb-refresh-token");
+    return res.status(401).json({ type: ErrorType.Unauthorized, message: "Invalid token" } as ErrorResponseDTO);
   }
 }

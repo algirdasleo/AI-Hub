@@ -1,11 +1,18 @@
 import { Router } from "express";
-import { validateBody } from "@server/middleware/validate-body.js";
 import { ComparisonStreamSchema } from "@shared/types/comparison/comparison-request.js";
-
-import { streamComparison } from "./controller.js";
+import { validateBody, authMiddleware } from "@server/middleware/index.js";
+import {
+  createComparisonJob,
+  streamComparisonByUid,
+  getComparisonConversations,
+  getComparisonMessages,
+} from "./controller.js";
 
 const router = Router();
 
-router.post("/", validateBody(ComparisonStreamSchema), streamComparison);
+router.post("/job", authMiddleware, validateBody(ComparisonStreamSchema), createComparisonJob);
+router.get("/stream", authMiddleware, streamComparisonByUid);
+router.get("/conversations", authMiddleware, getComparisonConversations);
+router.get("/conversations/:conversationId/messages", authMiddleware, getComparisonMessages);
 
-export { router as comparisonRouter };
+export const comparisonRouter = router;
