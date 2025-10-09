@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { AIProvider } from "@shared/config/model-schemas.js";
 
 vi.mock("@server/lib/llm/ai-manager.js", () => ({
   streamResponse: vi.fn(),
@@ -27,8 +28,7 @@ describe("streaming", () => {
 
     const res = await streamModel(
       mockRes as any,
-      { modelId: "m1", index: 0 } as any,
-      { provider: "p" },
+      { provider: AIProvider.OpenAI, modelId: "m1" },
       [],
       undefined,
       false,
@@ -43,8 +43,7 @@ describe("streaming", () => {
 
     const res = await streamModel(
       mockRes as any,
-      { modelId: "m1", index: 0 } as any,
-      { provider: "p" },
+      { provider: AIProvider.OpenAI, modelId: "m1" },
       [],
       undefined,
       false,
@@ -63,8 +62,16 @@ describe("streaming", () => {
     });
 
     const results = await streamMultipleModels(mockRes as any, [
-      { selectedModel: {}, modelMessages: [], modelInfo: { modelId: "m1" } },
-      { selectedModel: {}, modelMessages: [], modelInfo: { modelId: "m2" } },
+      {
+        selectedModel: { provider: AIProvider.OpenAI, modelId: "m1" },
+        modelMessages: [],
+        modelInfo: { modelId: "m1" },
+      },
+      {
+        selectedModel: { provider: AIProvider.Anthropic, modelId: "m2" },
+        modelMessages: [],
+        modelInfo: { modelId: "m2" },
+      },
     ]);
 
     expect(Array.isArray(results)).toBe(true);
