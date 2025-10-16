@@ -62,3 +62,8 @@ next-env.d.ts
 # Turborepo cache
 .turbo/
 **/.turbo/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
