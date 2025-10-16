@@ -31,7 +31,6 @@ export function MessageDisplay({
   messagesEndRef,
   isLoading = false,
   error = null,
-  disableAnimation = false,
 }: MessageDisplayProps) {
   if (error) {
     return (

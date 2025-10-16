@@ -1,5 +1,3 @@
-import { Page } from "@playwright/test";
-
 export const SELECTORS = {
   emailInput: 'input[type="email"]',
   passwordInput: 'input[type="password"]',

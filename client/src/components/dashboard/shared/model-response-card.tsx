@@ -19,7 +19,7 @@ function formatLatency(ms: number): string {
   return `${ms}ms`;
 }
 
-export function ModelResponseCard({ model, isStreaming }: ModelResponseCardProps) {
+export function ModelResponseCard({ model }: ModelResponseCardProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {

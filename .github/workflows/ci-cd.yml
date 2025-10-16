@@ -94,7 +94,8 @@ jobs:
       - name: Build & push server image
         run: |
           gcloud builds submit \
-            --tag gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }} ./
+            --tag gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }} \
+            -f server/Dockerfile .
 
       - name: Deploy server to Cloud Run
         run: |
@@ -107,7 +108,8 @@ jobs:
       - name: Build & push client image
         run: |
           gcloud builds submit \
-            --tag gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }} ./
+            --tag gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }} \
+            -f client/Dockerfile .
 
       - name: Deploy client to Cloud Run
         run: |
