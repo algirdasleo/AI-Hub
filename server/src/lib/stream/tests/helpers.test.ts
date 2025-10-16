@@ -11,7 +11,8 @@ describe("stream helpers SSE functions", () => {
     expect(mockRes.setHeader).toHaveBeenCalledWith("Content-Type", "text/event-stream");
     expect(mockRes.setHeader).toHaveBeenCalledWith("Cache-Control", "no-cache");
     expect(mockRes.setHeader).toHaveBeenCalledWith("Connection", "keep-alive");
-    expect(mockRes.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Origin", "*");
+    expect(mockRes.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Origin", "http://localhost:3000");
+    expect(mockRes.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Credentials", "true");
   });
 
   it("sendStreamComplete writes complete event and ends", () => {
