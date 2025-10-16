@@ -1,8 +1,16 @@
-import { ErrorType } from "@shared-utils/error-type";
-import { Result } from "../../../shared/utils/result";
-export async function apiFetch<T>(url: string, options?: RequestInit): Promise<Result<T>> {
+import { ErrorType, Result } from "@shared/utils";
+export async function apiFetch<T>(endpoint_path: string, options?: RequestInit): Promise<Result<T>> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_URL}${url}`, {
+    if (!process.env.NEXT_PUBLIC_SERVER_URL) {
+      return Result.fail({
+        type: ErrorType.InternalServerError,
+        message: "NEXT_PUBLIC_SERVER_URL is not defined",
+      });
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_SERVER_URL}${endpoint_path}`;
+
+    const res = await fetch(url, {
       ...options,
       credentials: "include",
       headers: {
@@ -10,20 +18,24 @@ export async function apiFetch<T>(url: string, options?: RequestInit): Promise<R
         ...(options?.headers || {}),
       },
     });
+
     if (!res.ok) {
       const text = await res.text();
+      console.error("API Error Response:", text);
       return Result.fail({
-        name: ErrorType.InternalServerError,
+        type: ErrorType.InternalServerError,
         message: `API Error: ${res.status} ${text}`,
       });
     }
+
     const data = (await res.json()) as T;
     return Result.ok<T>(data);
   } catch (error) {
+    console.error("API Fetch Error:", error);
     return Result.fail({
-      name: ErrorType.InternalServerError,
-      message: "API Fetch Error",
-      cause: error,
+      type: ErrorType.InternalServerError,
+      message: error instanceof Error ? error.message : "API Fetch Error",
+      details: error,
     });
   }
 }

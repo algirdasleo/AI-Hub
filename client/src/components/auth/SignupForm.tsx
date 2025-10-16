@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,27 +9,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShineBorder } from "@/components/ui/shine-border";
 import { authService } from "@/services";
+import { passwordSchema } from "@shared/types/auth/request";
 
-export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+export function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{ email?: boolean; password?: boolean }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ email?: boolean; display_name?: boolean; password?: boolean }>(
+    {},
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setFieldErrors({});
+
+    const passwordValidation = passwordSchema.safeParse(password);
+    if (!passwordValidation.success) {
+      setFieldErrors({ password: true });
+      const errors = passwordValidation.error.issues.map((err) => err.message);
+      const requirements = errors.filter((err) => !err.toLowerCase().includes("password")).join(", ");
+      setError(requirements ? `Password must contain: ${requirements}` : errors.join(". "));
+      return;
+    }
+
     setIsLoading(true);
 
-    const result = await authService.login({ email, password });
+    const result = await authService.signup({ email, password, display_name: displayName });
 
     if (result.isSuccess) {
-      window.location.href = `${window.location.protocol}//${window.location.host}/dashboard`;
+      const data = result.value;
+      if (data.success && data.requiresEmailVerification) {
+        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+      } else {
+        router.push("/");
+      }
     } else {
-      setFieldErrors({ email: true, password: true });
-      setError("Incorrect email or password");
+      setError(result.error.message || "Signup failed");
       setIsLoading(false);
     }
   };
@@ -38,8 +58,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       <Card className="relative overflow-hidden">
         <ShineBorder shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]} />
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Login with your Apple or Google account</CardDescription>
+          <CardTitle className="text-xl">Welcome to AI Hub</CardTitle>
+          <CardDescription>Create an account to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
@@ -52,7 +72,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                       fill="currentColor"
                     />
                   </svg>
-                  Login with Apple
+                  Signup with Apple
                 </Button>
                 <Button variant="outline" className="w-full">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -61,7 +81,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                       fill="currentColor"
                     />
                   </svg>
-                  Login with Google
+                  Signup with Google
                 </Button>
               </div>
               <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -83,11 +103,21 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   />
                 </div>
                 <div className="grid gap-3">
+                  <Label htmlFor="display-name">Username</Label>
+                  <Input
+                    id="display-name"
+                    type="text"
+                    placeholder=""
+                    required
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    disabled={isLoading}
+                    aria-invalid={fieldErrors.display_name}
+                  />
+                </div>
+                <div className="grid gap-3">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <a href="#" className="ml-auto text-sm underline-offset-4 hover:underline">
-                      Forgot your password?
-                    </a>
                   </div>
                   <Input
                     id="password"
@@ -100,13 +130,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Logging in..." : "Login"}
+                  {isLoading ? "Creating account..." : "Signup"}
                 </Button>
               </div>
               <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <a href="/auth/signup" className="underline underline-offset-4">
-                  Sign up
+                Already have an account?{" "}
+                <a href="/auth/login" className="underline underline-offset-4">
+                  Log in
                 </a>
               </div>
             </div>

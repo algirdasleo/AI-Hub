@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes";
 import { ReactNode } from "react";
+import { AuthProvider } from "@/context/AuthContext";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -9,9 +10,8 @@ type ProvidersProps = {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    // @ts-expect-error - next-themes types issue with React 19
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      {children}
+      <AuthProvider>{children}</AuthProvider>
     </ThemeProvider>
   );
 }
