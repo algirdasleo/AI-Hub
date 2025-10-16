@@ -21,10 +21,13 @@ export const createUserFromSupabase = (supabaseUser: SupabaseUser) =>
   });
 
 export const setAuthCookies = (res: Response, accessToken: string, refreshToken: string) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction,
     sameSite: "lax" as const,
+    ...(isProduction && { domain: process.env.COOKIE_DOMAIN }),
   };
 
   res.cookie("sb-access-token", accessToken, cookieOptions);

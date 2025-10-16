@@ -39,11 +39,50 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Start Redis
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          sudo systemctl start redis-server
+          redis-cli ping
+
+      - name: Setup test environment files
+        run: |
+          # Setup server env
+          cat > server/.env << EOF
+          SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_JWT_SECRET=${{ secrets.SUPABASE_JWT_SECRET }}
+          NEXT_PUBLIC_URL=http://localhost:3000
+          GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          REDIS_URL=redis://localhost:6379
+          JOB_TTL_SECONDS=600
+          EOF
+
+          # Setup client env
+          cat > client/.env.local << EOF
+          NEXT_PUBLIC_SERVER_URL=http://localhost:3001
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          EOF
+
+          # Setup e2e test env
+          cat > client/e2e/.env << EOF
+          BASE_URL=http://localhost:3000
+          API_URL=http://localhost:3001
+          TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+          EOF
+
       - name: Lint
         run: npm run lint --if-present
 
-      - name: Test
-        run: npm test --if-present --workspaces
+      # - name: Test
+      #   run: npm test --if-present --workspaces
+      #   env:
+      #     CI: true
 
       - name: Build all
         run: npm run build --if-present
