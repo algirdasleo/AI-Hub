@@ -40,6 +40,8 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
 
     const result = await authService.signup({ email, password, display_name: displayName });
 
+    setIsLoading(false);
+
     if (result.isSuccess) {
       const data = result.value;
       if (data.success && data.requiresEmailVerification) {
@@ -49,7 +51,6 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
       }
     } else {
       setError(result.error.message || "Signup failed");
-      setIsLoading(false);
     }
   };
 
@@ -94,7 +95,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
                   <Input
                     id="email"
                     type="email"
-                    placeholder="m@example.com"
+                    placeholder="someone@example.com"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -106,8 +107,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
                   <Label htmlFor="display-name">Username</Label>
                   <Input
                     id="display-name"
+                    name="username"
                     type="text"
-                    placeholder=""
+                    placeholder="johndoe"
                     required
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
