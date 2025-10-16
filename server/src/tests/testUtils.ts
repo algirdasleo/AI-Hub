@@ -6,6 +6,7 @@ type MockResponse = {
   status: ReturnType<typeof vi.fn>;
   end: ReturnType<typeof vi.fn>;
   setHeader: ReturnType<typeof vi.fn>;
+  flushHeaders: ReturnType<typeof vi.fn>;
 };
 
 export const makeMockRes = (): MockResponse => ({
@@ -13,6 +14,7 @@ export const makeMockRes = (): MockResponse => ({
   status: vi.fn().mockReturnThis(),
   end: vi.fn(),
   setHeader: vi.fn(),
+  flushHeaders: vi.fn(),
 });
 
 export const getWrites = (res: MockResponse): string[] =>

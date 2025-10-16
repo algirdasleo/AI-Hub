@@ -1,5 +1,4 @@
 import { Response } from "express";
-import { LanguageModelV2Usage } from "@ai-sdk/provider";
 import {
   ModelStreamErrorData,
   ModelStreamLatencyData,
@@ -9,10 +8,13 @@ import {
 import { EventType } from "@shared/types/core/event-types.js";
 
 export function setupStreamHeaders(res: Response) {
+  const origin = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.flushHeaders();
 }
 
 export function sendStreamComplete(res: Response) {

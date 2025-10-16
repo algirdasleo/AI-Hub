@@ -111,7 +111,7 @@ export async function saveChatMessageStats(
 ) {
   try {
     const totalTokens = usage.totalTokens || (usage.inputTokens || 0) + (usage.outputTokens || 0);
-    const costUsd = totalTokens * 0.00001; // Temporary: mock cost calculation
+    const costUsd = totalTokens * 0.00001;
 
     await insertChatMessageStats(messageId, totalTokens, costUsd, latencyMs);
     await updateUsageAggregates(model, userId, conversationId, totalTokens, costUsd);

@@ -94,5 +94,39 @@ describe("helpers", () => {
         web_search: "google-tool",
       });
     });
+
+    it("handleStreamPart handles error type", async () => {
+      const { handleStreamPart } = await import("../helpers.js");
+      const mockRes = makeMockRes();
+      const result = handleStreamPart(
+        mockRes as any,
+        { type: "error", error: new Error("API Error") } as any,
+        false,
+        Date.now(),
+        "gpt-4",
+      );
+      expect(result.shouldContinue).toBe(false);
+      expect(result.firstTokenSent).toBe(false);
+    });
+
+    it("handleStreamPart handles tool-error type", async () => {
+      const { handleStreamPart } = await import("../helpers.js");
+      const mockRes = makeMockRes();
+      const result = handleStreamPart(
+        mockRes as any,
+        {
+          type: "tool-error",
+          error: new Error("Tool failed"),
+          toolCallId: "123",
+          toolName: "test",
+          input: {},
+        } as any,
+        false,
+        Date.now(),
+        "gpt-4",
+      );
+      expect(result.shouldContinue).toBe(false);
+      expect(result.firstTokenSent).toBe(false);
+    });
   });
 });

@@ -5,6 +5,13 @@ import { authRouter } from "@server/modules/auth/index.js";
 import { chatRouter } from "@server/modules/chat/index.js";
 import { comparisonRouter } from "@server/modules/comparison/index.js";
 
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection:", reason);
+});
+
 const app = express();
 
 app.use(

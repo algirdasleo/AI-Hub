@@ -1,6 +1,6 @@
 import { JWTPayload } from "jose";
 import { Request } from "express";
-import { User, UserRole } from "@shared/types/auth/index.js";
+import { SubscriptionTier, User, UserRole } from "@shared/types/auth/index.js";
 
 export interface SupabaseJWTPayload extends JWTPayload {
   sub: string; // user ID
@@ -12,10 +12,9 @@ export interface SupabaseJWTPayload extends JWTPayload {
   user_metadata: {
     display_name: string;
     role: UserRole;
+    subscription_tier: SubscriptionTier;
   };
-  app_metadata: {
-    subscription_tier: string;
-  };
+  app_metadata: Record<string, any>;
 }
 
 export interface AuthRequest extends Request {

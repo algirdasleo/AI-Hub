@@ -2,6 +2,10 @@ import { Response } from "express";
 import z from "zod";
 import { ModelStreamErrorData } from "@shared/types/comparison/model-stream-data.js";
 import { ComparisonStreamSchema } from "@shared/types/comparison/comparison-request.js";
+import {
+  GetComparisonConversationsResponseDTO,
+  GetComparisonPromptsResponseDTO,
+} from "@shared/types/comparison/conversation.js";
 import { sendModelError } from "@server/lib/stream/helpers.js";
 import { createJob, getJob, deleteJob } from "@server/lib/job-store.js";
 import { AuthRequest } from "@server/modules/auth/index.js";
@@ -104,7 +108,8 @@ export async function getComparisonConversations(req: AuthRequest, res: Response
       return sendInternalError(res, result.error.message);
     }
 
-    res.status(200).json(result.value);
+    const response: GetComparisonConversationsResponseDTO = result.value;
+    res.status(200).json(response);
   } catch (error) {
     sendInternalError(res, String(error));
   }
@@ -130,7 +135,8 @@ export async function getComparisonMessages(req: AuthRequest, res: Response) {
       return sendInternalError(res, result.error.message);
     }
 
-    res.status(200).json(result.value);
+    const response: GetComparisonPromptsResponseDTO = result.value;
+    res.status(200).json(response);
   } catch (error) {
     sendInternalError(res, String(error));
   }

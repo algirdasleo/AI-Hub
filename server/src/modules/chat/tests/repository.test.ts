@@ -50,6 +50,11 @@ describe("chat repository", () => {
     });
     result = await addMessage("conv-123", MessageRole.USER, "Hello");
     expect(result.isSuccess).toBe(false);
+
+    (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
+    result = await addMessage("conv-123", MessageRole.USER, "Hello");
+    expect(result.isSuccess).toBe(false);
+    expect(result.error.message).toBe("No message data returned");
   });
 
   it("insertChatMessageStats handles success and errors", async () => {
@@ -64,6 +69,11 @@ describe("chat repository", () => {
     });
     result = await insertChatMessageStats("msg-123", 100, 0.01);
     expect(result.isSuccess).toBe(false);
+
+    (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
+    result = await insertChatMessageStats("msg-123", 100, 0.01);
+    expect(result.isSuccess).toBe(false);
+    expect(result.error.message).toBe("No chat message stats data returned");
   });
 
   it("updateMessageContent handles success and errors", async () => {
@@ -105,26 +115,20 @@ describe("chat repository", () => {
 
   it("getConversationMessages handles success and errors", async () => {
     const mockConvChain = {
-      select: vi
-        .fn()
-        .mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
           eq: vi
             .fn()
-            .mockReturnValue({
-              eq: vi
-                .fn()
-                .mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: "conv-123" }, error: null }) }),
-            }),
+            .mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: "conv-123" }, error: null }) }),
         }),
+      }),
     };
     const mockMsgChain = {
-      select: vi
-        .fn()
-        .mockReturnValue({
-          eq: vi
-            .fn()
-            .mockReturnValue({ order: vi.fn().mockResolvedValue({ data: [{ id: "msg-1" }], error: null }) }),
-        }),
+      select: vi.fn().mockReturnValue({
+        eq: vi
+          .fn()
+          .mockReturnValue({ order: vi.fn().mockResolvedValue({ data: [{ id: "msg-1" }], error: null }) }),
+      }),
     };
     (supabaseServer.from as any).mockReturnValueOnce(mockConvChain).mockReturnValueOnce(mockMsgChain);
 
@@ -132,22 +136,40 @@ describe("chat repository", () => {
     expect(result.value).toHaveLength(1);
 
     const mockConvErrorChain = {
-      select: vi
-        .fn()
-        .mockReturnValue({
-          eq: vi
-            .fn()
-            .mockReturnValue({
-              eq: vi
-                .fn()
-                .mockReturnValue({
-                  single: vi.fn().mockResolvedValue({ data: null, error: { message: "Not found" } }),
-                }),
-            }),
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: null, error: { message: "Not found" } }),
+          }),
         }),
+      }),
     };
     (supabaseServer.from as any).mockReturnValueOnce(mockConvErrorChain);
     result = await getConversationMessages("conv-123", "user-123");
     expect(result.error.type).toBe(ErrorType.NotFound);
+
+    const mockConvExceptionChain = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: { id: "conv-123" }, error: null }),
+          }),
+        }),
+      }),
+    };
+    const mockMsgExceptionChain = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          order: vi.fn().mockRejectedValue(new Error("Database exception")),
+        }),
+      }),
+    };
+    (supabaseServer.from as any)
+      .mockReturnValueOnce(mockConvExceptionChain)
+      .mockReturnValueOnce(mockMsgExceptionChain);
+    result = await getConversationMessages("conv-123", "user-123");
+    expect(result.isSuccess).toBe(false);
+    expect(result.error.type).toBe(ErrorType.DatabaseError);
+    expect(result.error.message).toBe("Error fetching conversation messages");
   });
 });

@@ -1,7 +1,6 @@
 import { Response } from "express";
 import z from "zod";
 import { ChatStreamSchema } from "@shared/types/chat/index.js";
-import { sendModelError, buildErrorPayload } from "@server/lib/stream/index.js";
 import { createJob, getJob, deleteJob } from "@server/lib/job-store.js";
 import { AuthRequest } from "@server/modules/auth/index.js";
 import {
@@ -13,6 +12,7 @@ import {
   getUidFromQuery,
 } from "@server/utils/index.js";
 import { createChatJobPayload, executeChatStream } from "./service.js";
+import { sendModelError } from "@server/lib/stream/helpers.js";
 import { getUserConversations, getConversationMessages } from "./repository.js";
 
 const ChatJobSchema = ChatStreamSchema.extend({
@@ -43,7 +43,11 @@ export async function createChatJob(req: AuthRequest, res: Response) {
     };
 
     const jobId = await createJob(jobPayload);
-    res.status(201).json({ uid: jobId });
+
+    res.status(201).json({
+      uid: jobId,
+      conversationId: conversationId,
+    });
   } catch (error) {
     sendInternalError(res, String(error));
   }
@@ -70,9 +74,13 @@ export async function streamChatByUid(req: AuthRequest, res: Response) {
   }
 
   const result = await executeChatStream(res, parsedJob.data, req.user.id);
-
   if (!result.isSuccess) {
-    sendModelError(res, buildErrorPayload("chat", result.error.message, result.error.type));
+    console.warn("Chat stream failed:", result.error.type, result.error.message);
+    sendModelError(res, {
+      modelId: parsedJob.data.modelId,
+      error: result.error.message,
+      errorType: result.error.type,
+    });
   }
 
   try {

@@ -8,16 +8,16 @@ export const createUserFromJWT = (payload: SupabaseJWTPayload) =>
     email: payload.email,
     role: payload.user_metadata.role,
     display_name: payload.user_metadata.display_name,
-    subscription_tier: payload.app_metadata.subscription_tier,
+    subscription_tier: payload.user_metadata.subscription_tier,
   });
 
 export const createUserFromSupabase = (supabaseUser: SupabaseUser) =>
   UserSchema.parse({
     id: supabaseUser.id,
     email: supabaseUser.email,
-    role: supabaseUser.user_metadata.role || UserRole.USER,
+    role: supabaseUser.user_metadata.role ?? "user",
     display_name: supabaseUser.user_metadata.display_name,
-    subscription_tier: supabaseUser.app_metadata.subscription_tier || SubscriptionTier.FREE,
+    subscription_tier: supabaseUser.app_metadata?.subscription_tier ?? "free",
   });
 
 export const setAuthCookies = (res: Response, accessToken: string, refreshToken: string) => {

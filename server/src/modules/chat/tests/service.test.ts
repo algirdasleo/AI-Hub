@@ -55,6 +55,11 @@ describe("chat service", () => {
       (addMessage as any).mockResolvedValue(Result.fail({ type: "DatabaseError", message: "Failed to save" }));
       result = await createChatJobPayload("user-123", mockParams);
       expect(result.error.message).toBe("Failed to save user message");
+
+      (createChatConversation as any).mockRejectedValue(new Error("Unexpected database error"));
+      result = await createChatJobPayload("user-123", mockParams);
+      expect(result.isSuccess).toBe(false);
+      expect(result.error.type).toBe("InternalServerError");
     });
   });
 
@@ -97,6 +102,11 @@ describe("chat service", () => {
       (addMessage as any).mockResolvedValue(Result.fail({ type: "DatabaseError", message: "Save failed" }));
       result = await executeChatStream(mockRes, mockParams, "user-123");
       expect(result.isSuccess).toBe(false);
+
+      (streamModel as any).mockRejectedValue(new Error("Stream crashed"));
+      result = await executeChatStream(mockRes, mockParams, "user-123");
+      expect(result.isSuccess).toBe(false);
+      expect(result.error.type).toBe("InternalServerError");
     });
   });
 });

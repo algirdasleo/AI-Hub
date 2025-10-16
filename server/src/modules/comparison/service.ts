@@ -105,7 +105,7 @@ export async function saveComparisonResults(
         if (outputResult.isSuccess && settled.value.usage) {
           const usage = settled.value.usage;
           const totalTokens = usage.totalTokens || (usage.inputTokens || 0) + (usage.outputTokens || 0);
-          const costUsd = totalTokens * 0.00001; // Temporary: mock cost calculation
+          const costUsd = totalTokens * 0.00001;
 
           const latencyMs = settled.value.latencyMs;
           await insertComparisonOutputStats(outputResult.value.id, totalTokens, costUsd, latencyMs);

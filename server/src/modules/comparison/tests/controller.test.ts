@@ -5,7 +5,7 @@ vi.stubEnv("REDIS_URL", "redis://localhost:6379");
 
 vi.mock("@shared/types/comparison/comparison-request.js", () => ({
   ComparisonStreamSchema: {
-    safeParse: vi.fn((d) => ({ success: true, data: d })),
+    safeParse: vi.fn((d: any) => ({ success: true, data: d })),
     extend: vi.fn().mockReturnThis(),
   },
 }));
@@ -32,6 +32,7 @@ vi.mock("@server/lib/stream/helpers.js", () => ({
 import { createComparisonJobPayload, executeComparisonStream } from "../service.js";
 import { getUserComparisonConversations, getComparisonConversationPrompts } from "../repository.js";
 import { createJob, getJob, deleteJob } from "@server/lib/job-store.js";
+import { ComparisonStreamSchema } from "@shared/types/comparison/comparison-request.js";
 import {
   validateAuth,
   sendUnauthorized,
@@ -101,6 +102,29 @@ describe("comparison controller", () => {
       );
       expect(sendInternalError).toHaveBeenCalled();
     });
+
+    it("handles invalid comparison request payload", async () => {
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      (ComparisonStreamSchema.safeParse as any).mockReturnValueOnce({
+        success: false,
+        error: { issues: [] },
+      });
+      await createComparisonJob({ body: { invalid: "data" }, user: mockUser } as any, mockRes() as any);
+      expect(sendBadRequest).toHaveBeenCalledWith(expect.anything(), "Invalid comparison request payload");
+    });
+
+    it("handles createComparisonJob exception", async () => {
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      (createComparisonJobPayload as any).mockRejectedValue(new Error("Unexpected error"));
+      await createComparisonJob(
+        {
+          body: { prompt: "Compare", models: [{ provider: "OpenAI", modelId: "gpt-4", settings: {} }] },
+          user: mockUser,
+        } as any,
+        mockRes() as any,
+      );
+      expect(sendInternalError).toHaveBeenCalled();
+    });
   });
 
   describe("streamComparisonByUid", () => {
@@ -141,6 +165,21 @@ describe("comparison controller", () => {
       await streamComparisonByUid({ user: mockUser } as any, mockRes() as any);
       expect(sendModelError).toHaveBeenCalled();
     });
+
+    it("handles deleteJob failure", async () => {
+      (getUidFromQuery as any).mockReturnValue("uid");
+      (getJob as any).mockResolvedValue({
+        prompt: "Compare",
+        models: [{ provider: "OpenAI", modelId: "gpt-4", settings: {} }],
+        conversationId: "conv",
+        promptId: "prompt",
+      });
+      (executeComparisonStream as any).mockResolvedValue(Result.ok({}));
+      (deleteJob as any).mockRejectedValue(new Error("Delete failed"));
+
+      await streamComparisonByUid({ user: mockUser } as any, mockRes() as any);
+      expect(deleteJob).toHaveBeenCalledWith("uid");
+    });
   });
 
   describe("getComparisonConversations", () => {
@@ -155,6 +194,15 @@ describe("comparison controller", () => {
       (getUserComparisonConversations as any).mockRejectedValue(new Error("Fail"));
       await getComparisonConversations({ user: mockUser } as any, mockRes() as any);
       expect(sendInternalError).toHaveBeenCalled();
+    });
+
+    it("handles getUserComparisonConversations failure result", async () => {
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      (getUserComparisonConversations as any).mockResolvedValue(
+        Result.fail({ type: "DatabaseError", message: "DB error" }),
+      );
+      await getComparisonConversations({ user: mockUser } as any, mockRes() as any);
+      expect(sendInternalError).toHaveBeenCalledWith(expect.anything(), "DB error");
     });
   });
 
@@ -190,6 +238,16 @@ describe("comparison controller", () => {
       (getComparisonConversationPrompts as any).mockResolvedValue(
         Result.fail({ type: "DatabaseError", message: "DB error" }),
       );
+      await getComparisonMessages(
+        { user: mockUser, params: { conversationId: "conv-123" } } as any,
+        mockRes() as any,
+      );
+      expect(sendInternalError).toHaveBeenCalled();
+    });
+
+    it("handles getComparisonMessages exception", async () => {
+      (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
+      (getComparisonConversationPrompts as any).mockRejectedValue(new Error("Unexpected error"));
       await getComparisonMessages(
         { user: mockUser, params: { conversationId: "conv-123" } } as any,
         mockRes() as any,

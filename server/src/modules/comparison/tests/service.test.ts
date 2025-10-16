@@ -49,6 +49,11 @@ describe("comparison service", () => {
       );
       result = await createComparisonJobPayload("user-123", mockParams);
       expect(result.error.message).toBe("Failed to create comparison prompt");
+
+      (createComparisonConversation as any).mockRejectedValue(new Error("Unexpected database error"));
+      result = await createComparisonJobPayload("user-123", mockParams);
+      expect(result.isSuccess).toBe(false);
+      expect(result.error.type).toBe("InternalServerError");
     });
   });
 

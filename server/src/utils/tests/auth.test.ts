@@ -19,6 +19,7 @@ vi.mock("@shared/types/auth/index.js", () => ({
 
 import { createUserFromJWT, createUserFromSupabase, setAuthCookies, clearAuthCookies } from "../auth.js";
 import type { UserRole } from "@shared/types/auth/index.js";
+import { SubscriptionTier } from "@shared/types/auth/index.js";
 
 describe("Auth Utils", () => {
   describe("createUserFromJWT", () => {
@@ -32,10 +33,9 @@ describe("Auth Utils", () => {
       user_metadata: {
         display_name: "Test User",
         role: "user" as UserRole,
+        subscription_tier: SubscriptionTier.FREE,
       },
-      app_metadata: {
-        subscription_tier: "free",
-      },
+      app_metadata: {},
     };
 
     it("should create user from JWT payload", () => {

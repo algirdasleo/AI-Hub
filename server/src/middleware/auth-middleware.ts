@@ -22,30 +22,35 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
   try {
     const { payload } = await jwtVerify(accessToken, JWKS);
     const jwtPayload = payload as SupabaseJWTPayload;
-
-    const now = Math.floor(Date.now() / 1000);
-    const isExpired = (jwtPayload.exp || 0) <= now;
-
-    if (isExpired) {
-      const { data, error } = await supabaseServer.auth.refreshSession({
-        refresh_token: refreshToken,
-      });
-      if (error || !data.session) {
-        res.clearCookie("sb-access-token");
-        res.clearCookie("sb-refresh-token");
-        return res.status(401).json({ type: ErrorType.Unauthorized });
-      }
-
-      setAuthCookies(res, data.session.access_token, data.session.refresh_token);
-      req.user = createUserFromSupabase(data.session.user);
-    } else {
-      req.user = createUserFromJWT(jwtPayload);
-    }
-
+    req.user = createUserFromJWT(jwtPayload);
     next();
   } catch (err: any) {
-    res.clearCookie("sb-access-token");
-    res.clearCookie("sb-refresh-token");
-    return res.status(401).json({ type: ErrorType.Unauthorized, message: "Invalid token" } as ErrorResponseDTO);
+    if (err.code === "ERR_JWT_EXPIRED" || err.claim === "exp") {
+      try {
+        const { data, error } = await supabaseServer.auth.refreshSession({
+          refresh_token: refreshToken,
+        });
+
+        if (error || !data.session) {
+          res.clearCookie("sb-access-token");
+          res.clearCookie("sb-refresh-token");
+          return res.status(401).json({ type: ErrorType.Unauthorized } as ErrorResponseDTO);
+        }
+
+        setAuthCookies(res, data.session.access_token, data.session.refresh_token);
+        req.user = createUserFromSupabase(data.session.user);
+        next();
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+        res.clearCookie("sb-access-token");
+        res.clearCookie("sb-refresh-token");
+        return res.status(401).json({ type: ErrorType.Unauthorized } as ErrorResponseDTO);
+      }
+    } else {
+      console.error("JWT verification failed:", err);
+      res.clearCookie("sb-access-token");
+      res.clearCookie("sb-refresh-token");
+      return res.status(401).json({ type: ErrorType.Unauthorized, message: "Invalid token" } as ErrorResponseDTO);
+    }
   }
 }
