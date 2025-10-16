@@ -45,6 +45,11 @@ import { createChatJob, streamChatByUid, getConversations, getMessages } from ".
 import { sendModelError } from "@server/lib/stream/helpers.js";
 
 describe("chat controller", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
   const mockRes = () => ({
     status: vi.fn().mockReturnThis(),
     json: vi.fn(),

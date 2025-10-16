@@ -29,6 +29,12 @@ import { jwtVerify } from "jose";
 import { authMiddleware } from "../auth-middleware.js";
 
 describe("authMiddleware", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
   const mockReq = () => ({ cookies: {}, user: undefined }) as Partial<AuthRequest>;
   const mockRes = () =>
     ({
@@ -37,8 +43,6 @@ describe("authMiddleware", () => {
       clearCookie: vi.fn(),
     }) as Partial<Response>;
   const mockNext = vi.fn();
-
-  beforeEach(() => vi.clearAllMocks());
 
   it("should reject requests with missing tokens", async () => {
     const req = mockReq();

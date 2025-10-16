@@ -50,6 +50,11 @@ import {
 import { sendModelError } from "@server/lib/stream/helpers.js";
 
 describe("comparison controller", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
   const mockRes = () => ({
     status: vi.fn().mockReturnThis(),
     json: vi.fn(),

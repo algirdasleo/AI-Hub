@@ -1,3 +1,5 @@
+import { Page } from "@playwright/test";
+
 export const SELECTORS = {
   emailInput: 'input[type="email"]',
   passwordInput: 'input[type="password"]',
@@ -22,3 +24,14 @@ export const SELECTORS = {
   compareButton: 'button:has-text("Compare")',
   comparisonResult: '[data-testid="comparison-result"]',
 };
+
+const TEST_EMAIL = process.env.TEST_USER_EMAIL || "test@example.com";
+const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || "!Password123";
+
+export async function loginUser(page: Page) {
+  await page.goto("http://localhost:3000/auth/login");
+  await page.fill('input[type="email"]', TEST_EMAIL);
+  await page.fill('input[type="password"]', TEST_PASSWORD);
+  await page.click('button[type="submit"]');
+  await page.waitForURL("**/dashboard**", { timeout: 10000 });
+}
