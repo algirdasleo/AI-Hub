@@ -1,2 +1,3 @@
-export * from "./comparison-request.js";
-export * from "./model-stream-data.js";
+export * from "./comparison-request";
+export * from "./model-stream-data";
+export * from "./conversation";

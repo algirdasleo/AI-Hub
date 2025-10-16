@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UIMessageSchema } from "./message.js";
+import { UIMessageSchema } from "./message";
 
 export const ConversationSchema = z.strictObject({
   id: z.uuid(),

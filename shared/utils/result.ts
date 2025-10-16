@@ -1,5 +1,5 @@
-import { ErrorBase } from "./error-base.js";
-import { ErrorType } from "./error-type.js";
+import { ErrorBase } from "./error-base";
+import { ErrorType } from "./error-type";
 export class Result<T, E extends ErrorBase = ErrorBase> {
   private readonly _isSuccess: boolean;
   private readonly _value?: T;

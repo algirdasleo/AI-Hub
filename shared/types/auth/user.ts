@@ -5,14 +5,18 @@ export enum UserRole {
   ADMIN = "admin",
   USER = "user",
 }
-export const UserRoleSchema = z.enum(UserRole);
+export const UserRoleSchema = z.enum([UserRole.ADMIN, UserRole.USER]);
 
 export enum SubscriptionTier {
   FREE = "free",
   PRO = "pro",
   ENTERPRISE = "enterprise",
 }
-export const SubscriptionTierSchema = z.enum(SubscriptionTier);
+export const SubscriptionTierSchema = z.enum([
+  SubscriptionTier.FREE,
+  SubscriptionTier.PRO,
+  SubscriptionTier.ENTERPRISE,
+]);
 
 export const UserSchema = z.strictObject({
   id: z.uuid(),

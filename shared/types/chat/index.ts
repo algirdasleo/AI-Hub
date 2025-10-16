@@ -1,3 +1,4 @@
-export * from "./message.js";
-export * from "./chat-request.js";
-export * from "./conversation.js";
+export * from "./message";
+export * from "./chat-request";
+export * from "./chat-response";
+export * from "./conversation";

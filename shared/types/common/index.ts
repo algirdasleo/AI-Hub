@@ -1,2 +1,2 @@
-export * from "./stream-request.js";
-export * from "./query-params.js";
+export * from "./stream-request";
+export * from "./query-params";

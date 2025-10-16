@@ -1,3 +1,3 @@
-export * from "./error-type.js";
-export * from "./result.js";
-export * from "./error-base.js";
+export * from "./error-type";
+export * from "./result";
+export * from "./error-base";
