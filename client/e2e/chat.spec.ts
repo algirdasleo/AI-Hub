@@ -1,21 +1,25 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
+import { loginUser } from "./utils/helpers";
 
 test.describe("Chat Flow", () => {
-  test("should navigate to chat page", async () => {});
+  test.beforeEach(async ({ page }) => {
+    await loginUser(page);
+  });
 
-  test("should display model selector", async () => {});
+  test("should navigate to chat page", async ({ page }) => {
+    await page.goto("http://localhost:3000/dashboard?view=chat");
+    await expect(page).toHaveURL(/view=chat/);
+  });
 
-  test("should be able to type in chat input", async () => {});
+  test("should display chat input", async ({ page }) => {
+    await page.goto("http://localhost:3000/dashboard?view=chat");
+    const chatInput = page.locator('textarea[placeholder*="Ask"], textarea[placeholder*="Chat"]');
+    await expect(chatInput).toBeVisible({ timeout: 10000 });
+  });
 
-  test("should show send button", async () => {});
-
-  test("should display conversation history sidebar", async () => {});
-
-  test("should be able to create new conversation", async () => {});
-});
-
-test.describe("Model Selection and Settings", () => {
-  test("should change selected model", async () => {});
-
-  test("should open model settings", async () => {});
+  test("should show send button", async ({ page }) => {
+    await page.goto("http://localhost:3000/dashboard?view=chat");
+    const sendButton = page.locator('button:has-text("Send"), button[aria-label*="Send"]').first();
+    await expect(sendButton).toBeVisible({ timeout: 10000 });
+  });
 });
