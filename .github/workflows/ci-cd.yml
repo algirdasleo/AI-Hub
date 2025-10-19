@@ -11,7 +11,6 @@ env:
   CLIENT_SERVICE: ai-hub-client
   SERVER_SERVICE: ai-hub-server
   GCP_REGION: europe-west1
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REPO_NAME: ai-hub
   SERVER_PORT: 3001
   CLIENT_PORT: 3000
@@ -48,11 +47,9 @@ jobs:
 
       - name: Setup test environment files
         run: |
-          # Setup server env
           cat > server/.env << EOF
           SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}
           SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          SUPABASE_JWT_SECRET=${{ secrets.SUPABASE_JWT_SECRET }}
           NEXT_PUBLIC_URL=http://localhost:3000
           GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
@@ -61,14 +58,12 @@ jobs:
           JOB_TTL_SECONDS=600
           EOF
 
-          # Setup client env
           cat > client/.env.local << EOF
           NEXT_PUBLIC_SERVER_URL=http://localhost:3001
           NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
           EOF
 
-          # Setup e2e test env
           cat > client/e2e/.env << EOF
           BASE_URL=http://localhost:3000
           API_URL=http://localhost:3001
@@ -107,6 +102,10 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      GCP_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -117,13 +116,25 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      - name: Authenticate to Google Cloud (OIDC)
+      - name: Validate GCP auth secrets
+        run: |
+          echo "PROJECT_ID=${PROJECT_ID:-<missing>}"
+          if [ -z "$PROJECT_ID" ]; then
+            echo "ERROR: PROJECT_ID (secret GCP_PROJECT_ID) is not set. Add it under repo secrets." >&2
+            exit 1
+          fi
+          if [ -z "$GCP_WORKLOAD_IDENTITY_PROVIDER" ] || [ -z "$GCP_SERVICE_ACCOUNT_EMAIL" ]; then
+            echo "ERROR: GCP Workload Identity not configured. Set GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_SERVICE_ACCOUNT_EMAIL as repository secrets." >&2
+            exit 1
+          fi
+
+      - name: Authenticate to Google Cloud using Workload Identity Federation
         id: auth
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
       - name: Set up gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
