@@ -139,6 +139,14 @@ jobs:
       - name: Set up gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Enable required GCP APIs
+        run: |
+          gcloud services enable \
+            cloudbuild.googleapis.com \
+            run.googleapis.com \
+            iamcredentials.googleapis.com \
+            --project=$PROJECT_ID
+
       - name: Configure gcloud defaults
         run: |
           gcloud config set project $PROJECT_ID
@@ -146,8 +154,9 @@ jobs:
 
       - name: Build & push server image
         run: |
-          gcloud builds submit server \
-            --tag gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }}
+          gcloud builds submit . \
+            --tag gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }} \
+            --dockerfile server/Dockerfile
 
       - name: Deploy server to Cloud Run
         run: |
@@ -159,8 +168,9 @@ jobs:
 
       - name: Build & push client image
         run: |
-          gcloud builds submit client \
-            --tag gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }}
+          gcloud builds submit . \
+            --tag gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }} \
+            --dockerfile client/Dockerfile
 
       - name: Deploy client to Cloud Run
         run: |
