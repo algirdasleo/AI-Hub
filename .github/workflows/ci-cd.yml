@@ -139,14 +139,6 @@ jobs:
       - name: Set up gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Enable required GCP APIs
-        run: |
-          gcloud services enable \
-            cloudbuild.googleapis.com \
-            run.googleapis.com \
-            iamcredentials.googleapis.com \
-            --project=$PROJECT_ID
-
       - name: Configure gcloud defaults
         run: |
           gcloud config set project $PROJECT_ID
