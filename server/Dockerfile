@@ -21,14 +21,14 @@ COPY . .
 COPY --from=deps /app/node_modules ./node_modules
 
 # Build the server
-WORKDIR /app/server
-RUN npm run build
+RUN npm run build --workspace=server
 
 # Production image, copy all the files and run the server
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
+ENV PORT=3001
 
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
@@ -46,7 +46,5 @@ USER nextjs
 
 EXPOSE 3001
 
-ENV PORT 3001
-
 # Start the server
-CMD ["node", "dist/app.js"]
+CMD ["node", "dist/src/app.js"]
