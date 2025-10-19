@@ -8,9 +8,11 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 COPY server/package*.json ./server/
+COPY shared/ ./shared/
+COPY tsconfig.base.json ./
 
-# Install dependencies
-RUN npm ci --omit=dev && npm cache clean --force
+# Install all dependencies (including dev for build)
+RUN npm ci && npm cache clean --force
 
 # Rebuild the source code only when needed
 FROM base AS builder
