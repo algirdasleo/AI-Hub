@@ -4,7 +4,7 @@ const TEST_EMAIL = process.env.TEST_USER_EMAIL || "test@example.com";
 const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || "!Password123";
 const NEW_USER_EMAIL = `testuser${Date.now()}@gmail.com`;
 
-test.describe.skip("Authentication Flow - Signup", () => {
+test.describe("Authentication Flow - Signup", () => {
   test("should successfully sign up a new user", async ({ page }) => {
     await page.goto("http://localhost:3000/auth/signup");
 
