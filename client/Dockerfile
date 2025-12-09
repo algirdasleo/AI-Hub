@@ -19,7 +19,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 WORKDIR /app/client
-RUN npx next build
+ENV PATH="/app/node_modules/.bin:${PATH}"
+RUN NEXT_TELEMETRY_DISABLED=1 next build
 
 # Stage 3: Runtime
 FROM node:20-alpine AS runner
@@ -41,4 +42,4 @@ USER nextjs
 EXPOSE 3000
 ENV HOSTNAME=0.0.0.0
 
-CMD ["npx", "next", "start", "-p", "3000"]
+CMD ["next", "start", "-p", "3000"]
