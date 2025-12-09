@@ -20,7 +20,7 @@ COPY . .
 
 WORKDIR /app/client
 ENV PATH="/app/node_modules/.bin:${PATH}"
-RUN NEXT_TELEMETRY_DISABLED=1 NEXT_TURBOPACK=0 next build
+RUN NEXT_TELEMETRY_DISABLED=1 NEXT_TURBOPACK=0 npx next build
 
 # Stage 3: Runtime
 FROM node:20-alpine AS runner
