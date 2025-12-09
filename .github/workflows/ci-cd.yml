@@ -144,33 +144,53 @@ jobs:
           gcloud config set project $PROJECT_ID
           gcloud config set run/region $GCP_REGION
 
-      - name: Configure Docker for GCR authentication
+      - name: Enable required APIs
         run: |
-          gcloud auth configure-docker
+          gcloud services enable artifactregistry.googleapis.com
+          gcloud services enable run.googleapis.com
+
+      - name: Create Artifact Registry repository if not exists
+        run: |
+          if ! gcloud artifacts repositories describe ${{ env.REPO_NAME }} --location=${{ env.GCP_REGION }} 2>/dev/null; then
+            echo "Creating Artifact Registry repository..."
+            gcloud artifacts repositories create ${{ env.REPO_NAME }} \
+              --repository-format=docker \
+              --location=${{ env.GCP_REGION }} \
+              --description="Docker repository for AI Hub services"
+          else
+            echo "Repository already exists"
+          fi
+
+      - name: Configure Docker for Artifact Registry authentication
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
       - name: Build & push server image
         run: |
-          docker build -t gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }} -f server/Dockerfile .
-          docker push gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }}
+          docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/$PROJECT_ID/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}:latest -f server/Dockerfile .
+          docker push ${{ env.GCP_REGION }}-docker.pkg.dev/$PROJECT_ID/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}:latest
 
       - name: Deploy server to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVER_SERVICE }} \
-            --image gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }} \
+            --image ${{ env.GCP_REGION }}-docker.pkg.dev/$PROJECT_ID/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}:latest \
             --platform managed \
+            --region ${{ env.GCP_REGION }} \
             --port $SERVER_PORT \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --set-env-vars SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }},GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Build & push client image
         run: |
-          docker build -t gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }} -f client/Dockerfile .
-          docker push gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }}
+          docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/$PROJECT_ID/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}:latest -f client/Dockerfile .
+          docker push ${{ env.GCP_REGION }}-docker.pkg.dev/$PROJECT_ID/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}:latest
 
       - name: Deploy client to Cloud Run
         run: |
           gcloud run deploy ${{ env.CLIENT_SERVICE }} \
-            --image gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }} \
+            --image ${{ env.GCP_REGION }}-docker.pkg.dev/$PROJECT_ID/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}:latest \
             --platform managed \
+            --region ${{ env.GCP_REGION }} \
             --port $CLIENT_PORT \
             --allow-unauthenticated
 
