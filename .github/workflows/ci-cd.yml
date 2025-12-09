@@ -144,9 +144,6 @@ jobs:
           gcloud config set project $PROJECT_ID
           gcloud config set run/region $GCP_REGION
 
-      - name: Enable Artifact Registry API
-        run: gcloud services enable artifactregistry.googleapis.com
-
       - name: Create Artifact Registry Repository
         run: |
           if ! gcloud artifacts repositories describe ${{ env.REPO_NAME }} --location=${{ env.GCP_REGION }} 2>/dev/null; then
