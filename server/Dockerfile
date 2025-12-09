@@ -35,9 +35,8 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy the built application
-COPY --from=builder --chown=nextjs:nodejs /app/dist/server ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/server/dist ./dist
 COPY --from=builder --chown=nextjs:nodejs /app/server/package*.json ./
-COPY --from=builder --chown=nextjs:nodejs /app/dist/shared ./shared
 
 # Copy production dependencies
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
@@ -47,4 +46,4 @@ USER nextjs
 EXPOSE 3001
 
 # Start the server
-CMD ["node", "dist/src/app.js"]
+CMD ["node", "dist/app.js"]
