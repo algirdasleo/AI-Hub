@@ -144,19 +144,34 @@ jobs:
           gcloud config set project $PROJECT_ID
           gcloud config set run/region $GCP_REGION
 
-      - name: Configure Docker for GCR authentication
+      - name: Enable Artifact Registry API
+        run: gcloud services enable artifactregistry.googleapis.com
+
+      - name: Create Artifact Registry Repository
         run: |
-          gcloud auth configure-docker
+          if ! gcloud artifacts repositories describe ${{ env.REPO_NAME }} --location=${{ env.GCP_REGION }} 2>/dev/null; then
+            echo "Creating Artifact Registry repository ${{ env.REPO_NAME }}..."
+            gcloud artifacts repositories create ${{ env.REPO_NAME }} \
+              --repository-format=docker \
+              --location=${{ env.GCP_REGION }} \
+              --description="Docker repository"
+          else
+            echo "Repository ${{ env.REPO_NAME }} already exists."
+          fi
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
       - name: Build & push server image
         run: |
-          docker build -t "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}" -f server/Dockerfile .
-          docker push "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}"
+          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}" -f server/Dockerfile .
+          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}"
 
       - name: Deploy server to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVER_SERVICE }} \
-            --image "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}" \
+            --image "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}" \
             --platform managed \
             --region ${{ env.GCP_REGION }} \
             --port $SERVER_PORT \
@@ -178,13 +193,13 @@ jobs:
 
       - name: Build & push client image
         run: |
-          docker build -t "gcr.io/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}" -f client/Dockerfile .
-          docker push "gcr.io/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}"
+          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}" -f client/Dockerfile .
+          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}"
 
       - name: Deploy client to Cloud Run
         run: |
           gcloud run deploy ${{ env.CLIENT_SERVICE }} \
-            --image "gcr.io/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}" \
+            --image "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}" \
             --platform managed \
             --region ${{ env.GCP_REGION }} \
             --port $CLIENT_PORT \
