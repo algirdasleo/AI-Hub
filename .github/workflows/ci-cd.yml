@@ -150,13 +150,13 @@ jobs:
 
       - name: Build & push server image
         run: |
-          docker build -t gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }} -f server/Dockerfile .
-          docker push gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }}
+          docker build -t "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}" -f server/Dockerfile .
+          docker push "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}"
 
       - name: Deploy server to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVER_SERVICE }} \
-            --image gcr.io/$PROJECT_ID/${{ env.SERVER_SERVICE }} \
+            --image "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}" \
             --platform managed \
             --region ${{ env.GCP_REGION }} \
             --port $SERVER_PORT \
@@ -178,13 +178,13 @@ jobs:
 
       - name: Build & push client image
         run: |
-          docker build -t gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }} -f client/Dockerfile .
-          docker push gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }}
+          docker build -t "gcr.io/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}" -f client/Dockerfile .
+          docker push "gcr.io/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}"
 
       - name: Deploy client to Cloud Run
         run: |
           gcloud run deploy ${{ env.CLIENT_SERVICE }} \
-            --image gcr.io/$PROJECT_ID/${{ env.CLIENT_SERVICE }} \
+            --image "gcr.io/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}" \
             --platform managed \
             --region ${{ env.GCP_REGION }} \
             --port $CLIENT_PORT \
