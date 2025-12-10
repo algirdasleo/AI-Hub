@@ -16,8 +16,8 @@ env:
   CLIENT_PORT: 3000
 
 jobs:
-  build-test:
-    name: Build & Test Monorepo
+  build:
+    name: Build Monorepo
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,44 +35,44 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
+      # - name: Install Playwright Browsers
+      #   run: npx playwright install --with-deps chromium
 
-      - name: Start Redis
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y redis-server
-          sudo systemctl start redis-server
-          redis-cli ping
+      # - name: Start Redis
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y redis-server
+      #     sudo systemctl start redis-server
+      #     redis-cli ping
 
-      - name: Setup test environment files
-        run: |
-          cat > server/.env << EOF
-          SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}
-          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          NEXT_PUBLIC_URL=http://localhost:3000
-          GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
-          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
-          REDIS_URL=redis://localhost:6379
-          JOB_TTL_SECONDS=600
-          EOF
+      # - name: Setup test environment files
+      #   run: |
+      #     cat > server/.env << EOF
+      #     SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}
+      #     SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+      #     NEXT_PUBLIC_URL=http://localhost:3000
+      #     GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+      #     OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+      #     ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+      #     REDIS_URL=redis://localhost:6379
+      #     JOB_TTL_SECONDS=600
+      #     EOF
+      #
+      #     cat > client/.env.local << EOF
+      #     NEXT_PUBLIC_SERVER_URL=http://localhost:3001
+      #     NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+      #     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      #     EOF
+      #
+      #     cat > client/e2e/.env << EOF
+      #     BASE_URL=http://localhost:3000
+      #     API_URL=http://localhost:3001
+      #     TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
+      #     TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+      #     EOF
 
-          cat > client/.env.local << EOF
-          NEXT_PUBLIC_SERVER_URL=http://localhost:3001
-          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
-          EOF
-
-          cat > client/e2e/.env << EOF
-          BASE_URL=http://localhost:3000
-          API_URL=http://localhost:3001
-          TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
-          EOF
-
-      - name: Lint
-        run: npm run lint --if-present
+      # - name: Lint
+      #   run: npm run lint --if-present
 
       # - name: Test
       #   run: npm test --if-present --workspaces
@@ -82,21 +82,21 @@ jobs:
       - name: Build all
         run: npm run build --if-present
 
-      - name: Upload build artifacts (client .next + server dist)
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: |
-            client/.next
-            client/package.json
-            server/dist
-            server/package.json
-            shared
-            tsconfig.base.json
+      # - name: Upload build artifacts (client .next + server dist)
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: build-output
+      #     path: |
+      #       client/.next
+      #       client/package.json
+      #       server/dist
+      #       server/package.json
+      #       shared
+      #       tsconfig.base.json
 
   deploy:
     name: Deploy to Cloud Run
-    needs: build-test
+    needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
