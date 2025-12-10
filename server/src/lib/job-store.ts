@@ -22,7 +22,7 @@ const keyFor = (id: string) => `job:${id}`;
 export async function createJob(payload: JobPayload): Promise<string> {
   const id = crypto.randomUUID();
   const key = keyFor(id);
-  
+
   const expiresAt = JOB_TTL > 0 ? Date.now() + JOB_TTL * 1000 : undefined;
   jobStore.set(key, { payload, expiresAt });
 
@@ -32,14 +32,14 @@ export async function createJob(payload: JobPayload): Promise<string> {
 export async function getJob(id: string): Promise<JobPayload | undefined> {
   const key = keyFor(id);
   const job = jobStore.get(key);
-  
+
   if (!job) return undefined;
-  
+
   if (job.expiresAt && job.expiresAt < Date.now()) {
     jobStore.delete(key);
     return undefined;
   }
-  
+
   return job.payload;
 }
 
