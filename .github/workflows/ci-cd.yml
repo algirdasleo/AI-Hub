@@ -1,23 +1,17 @@
-name: CI CD
+name: Deploy
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 env:
   NODE_VERSION: 20
-  CLIENT_SERVICE: ai-hub-client
-  SERVER_SERVICE: ai-hub-server
   GCP_REGION: europe-west1
-  REPO_NAME: ai-hub
-  SERVER_PORT: 3001
-  CLIENT_PORT: 3000
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
 jobs:
-  build:
-    name: Build Monorepo
+  deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,177 +26,52 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      - name: Install workspace dependencies
+      - name: Install dependencies
         run: npm ci
 
-      # - name: Install Playwright Browsers
-      #   run: npx playwright install --with-deps chromium
+      - name: Build
+        run: npm run build
 
-      # - name: Start Redis
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y redis-server
-      #     sudo systemctl start redis-server
-      #     redis-cli ping
-
-      # - name: Setup test environment files
-      #   run: |
-      #     cat > server/.env << EOF
-      #     SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}
-      #     SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-      #     NEXT_PUBLIC_URL=http://localhost:3000
-      #     GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
-      #     OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-      #     ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
-      #     REDIS_URL=redis://localhost:6379
-      #     JOB_TTL_SECONDS=600
-      #     EOF
-      #
-      #     cat > client/.env.local << EOF
-      #     NEXT_PUBLIC_SERVER_URL=http://localhost:3001
-      #     NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-      #     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
-      #     EOF
-      #
-      #     cat > client/e2e/.env << EOF
-      #     BASE_URL=http://localhost:3000
-      #     API_URL=http://localhost:3001
-      #     TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
-      #     TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
-      #     EOF
-
-      # - name: Lint
-      #   run: npm run lint --if-present
-
-      # - name: Test
-      #   run: npm test --if-present --workspaces
-      #   env:
-      #     CI: true
-
-      - name: Build all
-        run: npm run build --if-present
-
-      # - name: Upload build artifacts (client .next + server dist)
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: build-output
-      #     path: |
-      #       client/.next
-      #       client/package.json
-      #       server/dist
-      #       server/package.json
-      #       shared
-      #       tsconfig.base.json
-
-  deploy:
-    name: Deploy to Cloud Run
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    env:
-      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-      GCP_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Validate GCP auth secrets
-        run: |
-          echo "PROJECT_ID=${PROJECT_ID:-<missing>}"
-          if [ -z "$PROJECT_ID" ]; then
-            echo "ERROR: PROJECT_ID (secret GCP_PROJECT_ID) is not set. Add it under repo secrets." >&2
-            exit 1
-          fi
-          if [ -z "$GCP_WORKLOAD_IDENTITY_PROVIDER" ] || [ -z "$GCP_SERVICE_ACCOUNT_EMAIL" ]; then
-            echo "ERROR: GCP Workload Identity not configured. Set GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_SERVICE_ACCOUNT_EMAIL as repository secrets." >&2
-            exit 1
-          fi
-
-      - name: Authenticate to Google Cloud using Workload Identity Federation
-        id: auth
+      - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
 
-      - name: Set up gcloud SDK
+      - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure gcloud defaults
-        run: |
-          gcloud config set project $PROJECT_ID
-          gcloud config set run/region $GCP_REGION
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
-      - name: Create Artifact Registry Repository
+      - name: Build and push server
         run: |
-          if ! gcloud artifacts repositories describe ${{ env.REPO_NAME }} --location=${{ env.GCP_REGION }} 2>/dev/null; then
-            echo "Creating Artifact Registry repository ${{ env.REPO_NAME }}..."
-            gcloud artifacts repositories create ${{ env.REPO_NAME }} \
-              --repository-format=docker \
-              --location=${{ env.GCP_REGION }} \
-              --description="Docker repository"
-          else
-            echo "Repository ${{ env.REPO_NAME }} already exists."
-          fi
+          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/server" -f server/Dockerfile .
+          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/server"
 
-      - name: Configure Docker for Artifact Registry
+      - name: Deploy server
         run: |
-          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
-
-      - name: Build & push server image
-        run: |
-          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}" -f server/Dockerfile .
-          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}"
-
-      - name: Deploy server to Cloud Run
-        run: |
-          gcloud run deploy ${{ env.SERVER_SERVICE }} \
-            --image "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVER_SERVICE }}" \
+          gcloud run deploy ai-hub-server \
+            --image "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/server" \
             --platform managed \
             --region ${{ env.GCP_REGION }} \
-            --port $SERVER_PORT \
             --allow-unauthenticated \
-            --set-env-vars "SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }},GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }},REDIS_URL=redis://localhost:6379,JOB_TTL_SECONDS=600,NEXT_PUBLIC_URL=*"
+            --port 3001
 
-      - name: Get Server URL
-        id: server-url
-        run: |
-          echo "url=$(gcloud run services describe ${{ env.SERVER_SERVICE }} --platform managed --region ${{ env.GCP_REGION }} --format 'value(status.url)')" >> $GITHUB_OUTPUT
+      - name: Get server URL
+        id: server_url
+        run: echo "url=$(gcloud run services describe ai-hub-server --platform managed --region ${{ env.GCP_REGION }} --format 'value(status.url)')" >> $GITHUB_OUTPUT
 
-      - name: Create Client Env File
+      - name: Build and push client
         run: |
-          cat > client/.env.local << EOF
-          NEXT_PUBLIC_SERVER_URL=${{ steps.server-url.outputs.url }}
-          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
-          EOF
+          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/client" -f client/Dockerfile .
+          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/client"
 
-      - name: Build & push client image
+      - name: Deploy client
         run: |
-          docker build --pull --no-cache -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}" -f client/Dockerfile .
-          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}"
-
-      - name: Deploy client to Cloud Run
-        run: |
-          gcloud run deploy ${{ env.CLIENT_SERVICE }} \
-            --image "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}" \
+          gcloud run deploy ai-hub-client \
+            --image "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/client" \
             --platform managed \
             --region ${{ env.GCP_REGION }} \
-            --port $CLIENT_PORT \
-            --allow-unauthenticated
-
-      - name: Output service URLs
-        run: |
-          echo "Server URL: $(gcloud run services describe $SERVER_SERVICE --format 'value(status.url)')"
-          echo "Client URL: $(gcloud run services describe $CLIENT_SERVICE --format 'value(status.url)')"
+            --allow-unauthenticated \
+            --port 3000
