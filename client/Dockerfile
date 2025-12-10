@@ -19,13 +19,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 WORKDIR /app/client
-ENV PATH="/app/node_modules/.bin:${PATH}"
+ENV PATH="/app/client/node_modules/.bin:/app/node_modules/.bin:${PATH}"
 RUN NEXT_TELEMETRY_DISABLED=1 NEXT_TURBOPACK=0 npm run build
 
 # Stage 3: Runtime
 FROM node:20-alpine AS runner
 WORKDIR /app/client
 ENV NODE_ENV=production
+ENV PATH="/app/client/node_modules/.bin:/app/node_modules/.bin:${PATH}"
 
 RUN adduser -D -s /bin/sh nextjs
 
