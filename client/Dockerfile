@@ -21,7 +21,8 @@ COPY . .
 
 WORKDIR /app/client
 ENV PATH="/app/client/node_modules/.bin:/app/node_modules/.bin:${PATH}"
-RUN NEXT_TELEMETRY_DISABLED=1 NEXT_TURBOPACK=0 npm run build
+ENV NEXT_TELEMETRY_DISABLED=1 NEXT_TURBOPACK=0
+RUN npm run build
 
 # Stage 3: Runtime
 FROM node:20-alpine AS runner
@@ -32,13 +33,11 @@ ENV PATH="/app/client/node_modules/.bin:/app/node_modules/.bin:${PATH}"
 RUN adduser -D -s /bin/sh nextjs
 
 COPY --from=builder /app/client/.next ./.next
-COPY --from=builder /app/client/public ./public
+COPY client/public ./public
 COPY --from=builder /app/client/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/tsconfig.base.json ../tsconfig.base.json
 COPY --from=builder /app/shared ../shared
-
-RUN npm prune --omit=dev
 
 USER nextjs
 EXPOSE 3000

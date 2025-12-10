@@ -190,7 +190,7 @@ jobs:
 
       - name: Build & push client image
         run: |
-          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}" -f client/Dockerfile .
+          docker build --pull --no-cache -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}" -f client/Dockerfile .
           docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.CLIENT_SERVICE }}"
 
       - name: Deploy client to Cloud Run
