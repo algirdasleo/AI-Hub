@@ -14,9 +14,16 @@ process.on("unhandledRejection", (reason) => {
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://client:3000",
+  process.env.NEXT_PUBLIC_URL || "",
+].filter((origin) => origin.length > 0);
+
 app.use(
   cors({
-    origin: process.env.NEXT_PUBLIC_URL,
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
