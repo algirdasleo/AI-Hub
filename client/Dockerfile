@@ -8,7 +8,7 @@ COPY package.json package-lock.json ./
 COPY client/package.json ./client/package.json
 COPY server/package.json ./server/package.json
 
-RUN npm ci
+RUN npm ci --workspaces --include-workspace-root
 
 # Stage 2: Build client
 FROM node:20-alpine AS builder
