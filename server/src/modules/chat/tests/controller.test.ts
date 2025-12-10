@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Result } from "@shared/utils/result.js";
-import { AuthRequest } from "@server/modules/auth/index.js";
-
-vi.stubEnv("REDIS_URL", "redis://localhost:6379");
 
 vi.mock("@shared/types/chat/index.js", () => ({
   ChatStreamSchema: {

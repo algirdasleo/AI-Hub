@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Result } from "@shared/utils/result.js";
 
-vi.stubEnv("REDIS_URL", "redis://localhost:6379");
-
 vi.mock("@shared/types/comparison/comparison-request.js", () => ({
   ComparisonStreamSchema: {
     safeParse: vi.fn((d: any) => ({ success: true, data: d })),
