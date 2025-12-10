@@ -19,7 +19,11 @@ services:
     build:
       context: .
       dockerfile: client/Dockerfile
+      args:
+        NEXT_PUBLIC_SERVER_URL: http://server:3001
     ports:
       - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_SERVER_URL=http://server:3001
     depends_on:
       - server

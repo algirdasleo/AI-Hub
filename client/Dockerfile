@@ -19,6 +19,7 @@ WORKDIR /app/client
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
+ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3001
 RUN npm run build
 
 EXPOSE 3000
