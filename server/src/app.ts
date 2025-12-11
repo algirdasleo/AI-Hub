@@ -16,12 +16,21 @@ const app = express();
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000").split(",").map((o) => o.trim());
 
+console.log("CORS Allowed Origins:", allowedOrigins);
+
 app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
   }),
 );
+
+// Log incoming requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} from ${req.headers.origin}`);
+  next();
+});
+
 app.use(express.json());
 app.use(cookieParser());
 
