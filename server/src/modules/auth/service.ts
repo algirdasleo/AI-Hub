@@ -5,6 +5,9 @@ import { Result } from "@shared/utils/result.js";
 import { Request, Response } from "express";
 import { verificationEmitter } from "./verification-emitter.js";
 
+const CLIENT_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+const CALLBACK_URL = `${CLIENT_URL}/auth/callback`;
+
 export class AuthService {
   static async signup(req: SignupRequestDTO) {
     const { email, password } = req;
@@ -13,7 +16,7 @@ export class AuthService {
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_URL}/auth/callback`,
+        emailRedirectTo: CALLBACK_URL,
         data: {
           display_name: req.display_name || email.split("@")[0],
           role: UserRole.USER,
