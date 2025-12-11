@@ -5,6 +5,8 @@ services:
       dockerfile: server/Dockerfile
     ports:
       - "3001:3001"
+    env_file:
+      - server/.env
     environment:
       - ALLOWED_ORIGINS=http://localhost:3000,http://client:3000
 
