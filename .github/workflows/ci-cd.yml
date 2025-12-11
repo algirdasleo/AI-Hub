@@ -57,7 +57,7 @@ jobs:
             --region ${{ env.GCP_REGION }} \
             --allow-unauthenticated \
             --port 3001 \
-            --set-env-vars ALLOWED_ORIGIN=https://ai-hub-client-548009792699.europe-west1.run.app,SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }},SUPABASE_URL=${{ secrets.SUPABASE_URL }},GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }},JOB_TTL_SECONDS=600
+            --set-env-vars ALLOWED_ORIGIN=${{ secrets.ALLOWED_ORIGIN }},SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }},SUPABASE_URL=${{ secrets.SUPABASE_URL }},GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }},JOB_TTL_SECONDS=600
 
       - name: Get server URL
         id: server_url
