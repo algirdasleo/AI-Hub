@@ -21,7 +21,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     accessToken = authHeader.substring(7);
   }
 
-  if (!accessToken || !refreshToken) {
+  if (!accessToken) {
     return res.status(401).json({ type: ErrorType.Unauthorized } as ErrorResponseDTO);
   }
 
@@ -31,7 +31,8 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     req.user = createUserFromJWT(jwtPayload);
     next();
   } catch (err: any) {
-    if (err.code === "ERR_JWT_EXPIRED" || err.claim === "exp") {
+    // If access token is invalid and we have a refresh token, try to refresh
+    if ((err.code === "ERR_JWT_EXPIRED" || err.claim === "exp") && refreshToken) {
       try {
         const { data, error } = await supabaseServer.auth.refreshSession({
           refresh_token: refreshToken,
