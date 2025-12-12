@@ -22,13 +22,33 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     setFieldErrors({});
     setIsLoading(true);
 
-    const result = await authService.login({ email, password });
+    try {
+      const result = await authService.login({ email, password });
+      console.log("Login result:", result);
 
-    if (result.isSuccess) {
-      window.location.href = `${window.location.protocol}//${window.location.host}/dashboard`;
-    } else {
+      if (result.isSuccess) {
+        console.log("Response value:", result.value);
+        if (result.value.success) {
+          console.log("Login successful, tokens in localStorage:", {
+            access: localStorage.getItem("access_token"),
+            refresh: localStorage.getItem("refresh_token"),
+          });
+          window.location.href = `${window.location.protocol}//${window.location.host}/dashboard`;
+        } else {
+          setFieldErrors({ email: true, password: true });
+          setError("Incorrect email or password");
+          setIsLoading(false);
+        }
+      } else {
+        console.error("Login request failed:", result.error);
+        setFieldErrors({ email: true, password: true });
+        setError("Incorrect email or password");
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
       setFieldErrors({ email: true, password: true });
-      setError("Incorrect email or password");
+      setError("An unexpected error occurred");
       setIsLoading(false);
     }
   };

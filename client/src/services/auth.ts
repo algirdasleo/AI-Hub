@@ -56,9 +56,21 @@ export const authService = {
       body: JSON.stringify(credentials),
     });
 
-    if (result.isSuccess && result.value.success) {
-      localStorage.setItem("access_token", result.value.access_token);
-      localStorage.setItem("refresh_token", result.value.refresh_token);
+    console.log("apiFetch result:", result);
+
+    if (result.isSuccess) {
+      console.log("Login response:", result.value);
+      if (result.value.success) {
+        console.log("Setting tokens in localStorage:", {
+          access_token: result.value.access_token,
+          refresh_token: result.value.refresh_token,
+        });
+        localStorage.setItem("access_token", result.value.access_token);
+        localStorage.setItem("refresh_token", result.value.refresh_token);
+        console.log("Tokens set successfully");
+      }
+    } else {
+      console.error("Login failed - apiFetch error:", result.error);
     }
 
     clearCache();
