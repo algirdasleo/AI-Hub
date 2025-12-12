@@ -63,7 +63,8 @@ export const authService = {
 
     clearCache();
     return result;
-  },  async signup(data: SignupRequestDTO) {
+  },
+  async signup(data: SignupRequestDTO) {
     const result = await apiFetch<SignupResponseDTO>("/api/auth/signup", {
       method: "POST",
       body: JSON.stringify(data),

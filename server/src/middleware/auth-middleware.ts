@@ -17,20 +17,27 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
   let refreshToken = req.cookies["sb-refresh-token"];
 
   const authHeader = req.headers.authorization;
+  console.log(`Auth check for ${req.path}: authHeader=${authHeader ? "present" : "missing"}, cookie=${accessToken ? "present" : "missing"}`);
+  
   if (authHeader?.startsWith("Bearer ")) {
     accessToken = authHeader.substring(7);
+    console.log(`Using Bearer token from Authorization header`);
   }
 
   if (!accessToken) {
+    console.log(`No access token found, returning 401`);
     return res.status(401).json({ type: ErrorType.Unauthorized } as ErrorResponseDTO);
   }
 
   try {
+    console.log(`Attempting to verify JWT...`);
     const { payload } = await jwtVerify(accessToken, JWKS);
     const jwtPayload = payload as SupabaseJWTPayload;
     req.user = createUserFromJWT(jwtPayload);
+    console.log(`JWT verified successfully for user: ${jwtPayload.email}`);
     next();
   } catch (err: any) {
+    console.error("JWT verification error:", err.code, err.message);
     // If access token is invalid and we have a refresh token, try to refresh
     if ((err.code === "ERR_JWT_EXPIRED" || err.claim === "exp") && refreshToken) {
       try {

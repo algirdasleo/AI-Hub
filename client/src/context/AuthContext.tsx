@@ -61,12 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           clearUserCache();
           // Redirect to login if accessing a protected route
           const path = typeof window !== "undefined" ? window.location.pathname : "/";
-          const isProtectedRoute = path.startsWith("/dashboard") || 
-                                  path.startsWith("/chat") ||
-                                  path.startsWith("/comparison") ||
-                                  path.startsWith("/projects") ||
-                                  path.startsWith("/tracking");
-          
+          const isProtectedRoute =
+            path.startsWith("/dashboard") ||
+            path.startsWith("/chat") ||
+            path.startsWith("/comparison") ||
+            path.startsWith("/projects") ||
+            path.startsWith("/tracking");
+
           if (isProtectedRoute) {
             router.push("/auth/login");
           }
@@ -86,11 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/auth/login");
   };
 
-  return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, setUser, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
