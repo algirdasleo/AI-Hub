@@ -57,7 +57,7 @@ jobs:
             --region ${{ env.GCP_REGION }} \
             --allow-unauthenticated \
             --port 3001 \
-            --set-env-vars ALLOWED_ORIGIN=${{ secrets.ALLOWED_ORIGIN }},SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }},SUPABASE_URL=${{ secrets.SUPABASE_URL }},GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }},JOB_TTL_SECONDS=600
+            --set-env-vars ALLOWED_ORIGIN=${{ secrets.ALLOWED_ORIGIN }},SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }},SUPABASE_URL=${{ secrets.SUPABASE_URL }},GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }},JOB_TTL_SECONDS=600,NEXT_PUBLIC_URL=${{ secrets.NEXT_PUBLIC_URL }}
 
       - name: Get server URL
         id: server_url
@@ -65,7 +65,9 @@ jobs:
 
       - name: Build and push client
         run: |
-          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/client" -f client/Dockerfile .
+          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/client" \
+            --build-arg NEXT_PUBLIC_SERVER_URL="${{ steps.server_url.outputs.url }}" \
+            -f client/Dockerfile .
           docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/ai-hub/client"
 
       - name: Deploy client
