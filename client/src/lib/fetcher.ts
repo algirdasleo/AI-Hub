@@ -10,13 +10,24 @@ export async function apiFetch<T>(endpoint_path: string, options?: RequestInit):
 
     const url = `${process.env.NEXT_PUBLIC_SERVER_URL}${endpoint_path}`;
 
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (options?.headers) {
+      Object.assign(headers, options.headers);
+    }
+
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+
     const res = await fetch(url, {
       ...options,
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(options?.headers || {}),
-      },
+      headers,
     });
 
     if (!res.ok) {

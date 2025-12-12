@@ -15,13 +15,9 @@ let userCache: User | null = null;
 let lastFetchTime = 0;
 
 function getTokenExpiration(): number | null {
-  if (typeof document === "undefined") return null;
+  if (typeof localStorage === "undefined") return null;
 
-  const cookies = document.cookie.split(";");
-  const tokenCookie = cookies.find((c) => c.trim().startsWith("sb-access-token="));
-  if (!tokenCookie) return null;
-
-  const token = tokenCookie.split("=")[1];
+  const token = localStorage.getItem("access_token");
   if (!token) return null;
 
   try {
@@ -75,12 +71,10 @@ export const authService = {
   },
 
   async logout() {
-    const result = await apiFetch<LogoutResponseDTO>("/api/auth/logout", {
-      method: "POST",
-    });
-
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     clearCache();
-    return result;
+    return apiFetch<LogoutResponseDTO>("/api/auth/logout", { method: "POST" });
   },
 
   async getCurrentUser() {

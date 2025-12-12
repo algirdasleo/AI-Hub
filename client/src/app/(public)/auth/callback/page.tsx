@@ -28,10 +28,15 @@ export default function AuthCallbackPage() {
           return;
         }
 
+        localStorage.setItem("access_token", accessToken);
+        localStorage.setItem("refresh_token", refreshToken);
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/auth/callback`, {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
           body: JSON.stringify({ access_token: accessToken, refresh_token: refreshToken }),
         });
 

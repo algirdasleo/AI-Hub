@@ -10,8 +10,7 @@ export function middleware(request: NextRequest) {
   }
 
   const hasAccessToken = request.cookies.has("sb-access-token");
-  const hasRefreshToken = request.cookies.has("sb-refresh-token");
-  const isAuthenticated = hasAccessToken && hasRefreshToken;
+  const isAuthenticated = hasAccessToken;
 
   const isAuthPage = path.startsWith("/auth");
   const isPublicHomePage = path === "/";

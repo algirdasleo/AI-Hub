@@ -27,7 +27,6 @@ export const setAuthCookies = (res: Response, accessToken: string, refreshToken:
     httpOnly: true,
     secure: isProduction,
     sameSite: "none" as const,
-    ...(isProduction && { domain: ".europe-west1.run.app" }),
   };
 
   res.cookie("sb-access-token", accessToken, cookieOptions);

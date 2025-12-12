@@ -8,7 +8,7 @@ services:
     env_file:
       - server/.env
     environment:
-      - ALLOWED_ORIGINS=http://localhost:3000,http://client:3000
+      - ALLOWED_ORIGIN=http://client:3000
 
   client:
     build:

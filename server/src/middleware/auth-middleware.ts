@@ -13,7 +13,13 @@ if (!process.env.SUPABASE_URL) {
 const JWKS = createRemoteJWKSet(new URL(`${process.env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`));
 
 export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
-  const { "sb-access-token": accessToken, "sb-refresh-token": refreshToken } = req.cookies;
+  let accessToken = req.cookies["sb-access-token"];
+  let refreshToken = req.cookies["sb-refresh-token"];
+
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith("Bearer ")) {
+    accessToken = authHeader.substring(7);
+  }
 
   if (!accessToken || !refreshToken) {
     return res.status(401).json({ type: ErrorType.Unauthorized } as ErrorResponseDTO);
