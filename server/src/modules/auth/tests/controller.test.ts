@@ -101,6 +101,8 @@ describe("Auth Controller", () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         success: true,
         user: { id: "123", email: "test@example.com" },
+        access_token: "token123",
+        refresh_token: "refresh123",
       });
     });
 

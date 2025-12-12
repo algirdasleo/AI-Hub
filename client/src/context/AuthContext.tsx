@@ -39,29 +39,45 @@ const clearUserCache = () => {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const validateAuth = async () => {
-      const cachedUser = getCachedUser();
-      if (cachedUser) {
-        setUser(cachedUser);
-      }
+      try {
+        const cachedUser = getCachedUser();
+        if (cachedUser) {
+          setUser(cachedUser);
+        }
 
-      const result = await authService.getCurrentUser();
+        const result = await authService.getCurrentUser();
 
-      if (result.isSuccess && result.value.success) {
-        const authenticatedUser = result.value.user;
-        setUser(authenticatedUser);
-        cacheUser(authenticatedUser);
-      } else {
-        setUser(null);
-        clearUserCache();
+        if (result.isSuccess && result.value.success) {
+          const authenticatedUser = result.value.user;
+          setUser(authenticatedUser);
+          cacheUser(authenticatedUser);
+        } else {
+          setUser(null);
+          clearUserCache();
+          // Redirect to login if accessing a protected route
+          const path = typeof window !== "undefined" ? window.location.pathname : "/";
+          const isProtectedRoute = path.startsWith("/dashboard") || 
+                                  path.startsWith("/chat") ||
+                                  path.startsWith("/comparison") ||
+                                  path.startsWith("/projects") ||
+                                  path.startsWith("/tracking");
+          
+          if (isProtectedRoute) {
+            router.push("/auth/login");
+          }
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
     validateAuth();
-  }, []);
+  }, [router]);
 
   const logout = async () => {
     await authService.logout();
@@ -70,7 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/auth/login");
   };
 
-  return <AuthContext.Provider value={{ user, setUser, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, setUser, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

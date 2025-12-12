@@ -21,14 +21,20 @@ export function middleware(request: NextRequest) {
     path.startsWith("/projects") ||
     path.startsWith("/tracking") ||
     path.startsWith("/settings");
+
+  // If user is authenticated, allow access to any route
   if (isAuthenticated) {
     return NextResponse.next();
   }
 
+  // Allow public routes
   if (isPublicHomePage || isAuthPage) {
     return NextResponse.next();
   }
 
+  // For app routes without authentication, redirect to login
+  // Note: Client-side redirects will happen in AuthProvider and components
+  // This is just a fallback for direct navigation
   if (isAppRoute) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
