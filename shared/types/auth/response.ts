@@ -5,7 +5,8 @@ import { BaseResponseSchema, ErrorResponseSchema } from "@shared/types/core/inde
 export const LoginSuccessSchema = BaseResponseSchema.extend({
   success: z.literal(true),
   user: UserSchema,
-  sessionToken: z.string().optional(),
+  access_token: z.string(),
+  refresh_token: z.string(),
 });
 
 export const SignupSuccessSchema = BaseResponseSchema.extend({

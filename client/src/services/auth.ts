@@ -56,6 +56,11 @@ export const authService = {
       body: JSON.stringify(credentials),
     });
 
+    if (result.isSuccess && result.value.success) {
+      localStorage.setItem("access_token", result.value.access_token);
+      localStorage.setItem("refresh_token", result.value.refresh_token);
+    }
+
     clearCache();
     return result;
   },

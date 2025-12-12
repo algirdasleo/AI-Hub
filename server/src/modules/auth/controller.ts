@@ -51,6 +51,8 @@ export async function login(req: Request, res: Response) {
   return res.status(200).json({
     success: true,
     user: createUserFromSupabase(data.user),
+    access_token: data.session.access_token,
+    refresh_token: data.session.refresh_token,
   } as LoginResponseDTO);
 }
 
@@ -88,6 +90,8 @@ export async function callback(req: Request, res: Response) {
   return res.status(200).json({
     success: true,
     user: data.user ? createUserFromSupabase(data.user) : undefined,
+    access_token: access_token,
+    refresh_token: refresh_token,
   } as LoginResponseDTO);
 }
 
