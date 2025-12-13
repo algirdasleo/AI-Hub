@@ -123,3 +123,36 @@ export function getCurrentUser(req: AuthRequest, res: Response) {
 
   return res.status(200).json(response);
 }
+
+export async function verifyTokens(req: Request, res: Response) {
+  const { accessToken, refreshToken } = req.body;
+
+  console.log("[verifyTokens] Received token refresh request");
+
+  if (!accessToken || !refreshToken) {
+    console.log("[verifyTokens] Missing tokens in request body");
+    return handleError(res, 400, {
+      type: ErrorType.InvalidParameters,
+      message: "Missing authentication tokens",
+    });
+  }
+
+  console.log("[verifyTokens] Calling AuthService.verifyTokens");
+  const result = await AuthService.verifyTokens(accessToken, refreshToken);
+
+  if (!result.isSuccess) {
+    console.log("[verifyTokens] Token verification failed:", result.error);
+    return handleError(res, 401, { ...result.error, details: String(result.error.details ?? "") });
+  }
+
+  const data = result.value;
+  setAuthCookies(res, data.session.access_token, data.session.refresh_token);
+
+  console.log("[verifyTokens] Successfully refreshed tokens");
+  return res.status(200).json({
+    success: true,
+    user: data.user ? createUserFromSupabase(data.user) : undefined,
+    access_token: data.session.access_token,
+    refresh_token: data.session.refresh_token,
+  } as LoginResponseDTO);
+}

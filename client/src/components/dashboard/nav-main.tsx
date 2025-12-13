@@ -1,13 +1,13 @@
 "use client";
 
 import { type LucideIcon } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
 export function NavMain({
   items,
-  onNavigate,
 }: {
   items: {
     title: string;
@@ -15,10 +15,11 @@ export function NavMain({
     icon: LucideIcon;
     isActive?: boolean;
   }[];
-  onNavigate?: (to: string) => void;
 }) {
-  const searchParams = useSearchParams();
-  const currentView = searchParams.get("view") || "overview";
+  const pathname = usePathname();
+
+  // Extract the last segment of the pathname to determine active state
+  const currentView = pathname.split("/").filter(Boolean).pop() || "overview";
 
   return (
     <SidebarMenu>
@@ -27,18 +28,10 @@ export function NavMain({
         return (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton asChild isActive={isActive}>
-              <a
-                href={item.url}
-                onClick={(e) => {
-                  if (onNavigate) {
-                    e.preventDefault();
-                    onNavigate(item.url);
-                  }
-                }}
-              >
+              <Link href={`/app/${item.url}`}>
                 <item.icon />
                 <span>{item.title}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         );

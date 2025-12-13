@@ -52,11 +52,11 @@ export default function PublicHeader() {
                 Projects
               </NavigationMenuLink>
             </NavigationMenuItem>
-            <NavigationMenuItem>
+            {/* <NavigationMenuItem>
               <NavigationMenuLink href="/tracking" className={navigationMenuTriggerStyle()}>
                 Tracking
               </NavigationMenuLink>
-            </NavigationMenuItem>
+            </NavigationMenuItem> */}
           </NavigationMenuList>
         </NavigationMenu>
         <NavigationMenu>

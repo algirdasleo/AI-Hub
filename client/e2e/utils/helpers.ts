@@ -6,9 +6,9 @@ export const SELECTORS = {
   loginButton: 'button[type="submit"]',
   signupButton: 'button[type="submit"]',
 
-  dashboardLink: 'a[href*="/dashboard"]',
-  chatLink: 'a[href*="/chat"]',
-  comparisonLink: 'a[href*="/comparison"]',
+  dashboardLink: 'a[href*="/app"]',
+  chatLink: 'a[href*="/app/chat"]',
+  comparisonLink: 'a[href*="/app/comparison"]',
   projectsLink: 'a[href*="/projects"]',
   trackingLink: 'a[href*="/tracking"]',
 
@@ -33,5 +33,5 @@ export async function loginUser(page: Page) {
   await page.fill('input[type="email"]', TEST_EMAIL);
   await page.fill('input[type="password"]', TEST_PASSWORD);
   await page.click('button[type="submit"]');
-  await page.waitForURL("**/dashboard**", { timeout: 10000 });
+  await page.waitForURL("**/app/**", { timeout: 10000 });
 }

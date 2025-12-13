@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  ClipboardList,
   Command,
   Compass,
   Folder,
@@ -47,12 +46,12 @@ const data = {
       url: "projects",
       icon: Folder,
     },
-    {
-      title: "Tracking",
-      url: "tracking",
-      icon: ClipboardList,
-      badge: "10",
-    },
+    // {
+    //   title: "Tracking",
+    //   url: "tracking",
+    //   icon: ClipboardList,
+    //   badge: "10",
+    // },
   ],
   navSecondary: [
     {
@@ -69,14 +68,12 @@ const data = {
 };
 
 export function AppSidebar({
-  onNavigate,
   currentView = "chat",
   selectedConversationId,
   onConversationSelect,
   onNewConversation,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
-  onNavigate?: (to: string) => void;
   currentView?: string;
   selectedConversationId?: string;
   onConversationSelect?: (conversationId: string) => void;
@@ -86,7 +83,7 @@ export function AppSidebar({
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
-        <NavMain items={data.navMain} onNavigate={onNavigate} />
+        <NavMain items={data.navMain} />
       </SidebarHeader>
       {(currentView === "chat" || currentView === "comparison") && (
         <SidebarContent>

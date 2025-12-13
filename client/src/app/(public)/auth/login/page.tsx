@@ -7,19 +7,12 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const router = useRouter();
   const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    console.log("[LoginPage] useEffect running, user:", user?.email);
     if (user) {
-      // Check if token still exists before redirecting
-      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-      console.log("[LoginPage] Token exists:", !!token);
-      if (token) {
-        console.log("[LoginPage] User is logged in, redirecting to dashboard");
-        router.push("/dashboard");
-      }
+      router.push("/app/overview");
     }
   }, [user, router]);
 

@@ -156,10 +156,7 @@ export default function ComparisonPanel({ selectedConversationId }: { selectedCo
                 ) : selectedConversationId ? (
                   <Button
                     onClick={() => {
-                      const url = new URL(window.location.href);
-                      url.searchParams.delete("conversation");
-                      window.history.replaceState({}, "", url.toString());
-                      window.location.reload();
+                      resetConversation();
                     }}
                     variant="outline"
                     size="sm"
