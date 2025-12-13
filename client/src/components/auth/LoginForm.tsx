@@ -18,20 +18,46 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    console.log("LoginForm: Form submitted");
     setError("");
     setFieldErrors({});
     setIsLoading(true);
 
-    const result = await authService.login({ email, password });
+    try {
+      console.log("LoginForm: Calling authService.login()");
+      const result = await authService.login({ email, password });
+      console.log("LoginForm: Login result:", result);
 
-    if (result.isSuccess && result.value.success) {
-      // Wait a bit for cookies to be set, then redirect
-      setTimeout(() => {
-        window.location.href = `${window.location.protocol}//${window.location.host}/dashboard`;
-      }, 500);
-    } else {
+      if (result.isSuccess) {
+        console.log("LoginForm: apiFetch successful, response value:", result.value);
+        if (result.value.success) {
+          console.log("LoginForm: Login successful, preparing redirect to dashboard");
+          console.log("LoginForm: Tokens in localStorage:", {
+            access: localStorage.getItem("access_token")?.substring(0, 50) + "...",
+            refresh: localStorage.getItem("refresh_token"),
+          });
+          setTimeout(() => {
+            console.log("LoginForm: Executing redirect to dashboard");
+            const url = `${window.location.protocol}//${window.location.host}/dashboard`;
+            console.log("LoginForm: Redirect URL:", url);
+            window.location.href = url;
+          }, 500);
+        } else {
+          console.log("LoginForm: Response success is false");
+          setFieldErrors({ email: true, password: true });
+          setError("Incorrect email or password");
+          setIsLoading(false);
+        }
+      } else {
+        console.log("LoginForm: apiFetch failed:", result.error);
+        setFieldErrors({ email: true, password: true });
+        setError("Incorrect email or password");
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.error("LoginForm: Unexpected error:", err);
       setFieldErrors({ email: true, password: true });
-      setError("Incorrect email or password");
+      setError("An unexpected error occurred");
       setIsLoading(false);
     }
   };

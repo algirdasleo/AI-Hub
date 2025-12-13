@@ -18,6 +18,7 @@ function getViewFromUrl(): string {
 }
 
 export default function DashboardPage({ searchParams }: { searchParams?: Promise<{ view?: string }> }) {
+  console.log("DashboardPage: Rendering");
   const params = searchParams ? use(searchParams) : undefined;
   const initialView = params?.view ?? getViewFromUrl();
   const [view, setView] = useState<string>(() => initialView);
@@ -28,6 +29,10 @@ export default function DashboardPage({ searchParams }: { searchParams?: Promise
     temperature: 0.7,
     maxOutputTokens: undefined,
   });
+
+  useEffect(() => {
+    console.log("DashboardPage: useEffect running");
+  }, []);
 
   useEffect(() => {
     const onPop = () => setView(getViewFromUrl());

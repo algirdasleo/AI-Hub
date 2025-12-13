@@ -33,8 +33,6 @@ export function middleware(request: NextRequest) {
   }
 
   // For app routes without authentication, redirect to login
-  // Note: Client-side redirects will happen in AuthProvider and components
-  // This is just a fallback for direct navigation
   if (isAppRoute) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }

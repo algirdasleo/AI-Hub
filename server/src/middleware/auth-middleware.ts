@@ -17,8 +17,10 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
   let refreshToken = req.cookies["sb-refresh-token"];
 
   const authHeader = req.headers.authorization;
-  console.log(`Auth check for ${req.path}: authHeader=${authHeader ? "present" : "missing"}, cookie=${accessToken ? "present" : "missing"}`);
-  
+  console.log(
+    `Auth check for ${req.path}: authHeader=${authHeader ? "present" : "missing"}, cookie=${accessToken ? "present" : "missing"}`,
+  );
+
   if (authHeader?.startsWith("Bearer ")) {
     accessToken = authHeader.substring(7);
     console.log(`Using Bearer token from Authorization header`);
