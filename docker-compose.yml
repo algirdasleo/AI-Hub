@@ -8,7 +8,7 @@ services:
     env_file:
       - server/.env
     environment:
-      - ALLOWED_ORIGIN=http://client:3000
+      - NEXT_PUBLIC_URL=http://client:3000
 
   client:
     build:
