@@ -44,6 +44,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const validateAuth = async () => {
       try {
+        // Get current path
+        const path = typeof window !== "undefined" ? window.location.pathname : "/";
+        console.log("[AuthProvider] useEffect running, current path:", path);
+
+        // Only validate on protected routes or auth pages
+        const isProtectedRoute = path.startsWith("/dashboard");
+
+        const isAuthPage = path.startsWith("/auth/");
+
+        if (!isProtectedRoute && !isAuthPage) {
+          console.log("[AuthProvider] Public route, skipping validation");
+          return;
+        }
+
         console.log("[AuthProvider] Starting validation");
         const cachedUser = getCachedUser();
         if (cachedUser) {
@@ -66,15 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(null);
           clearUserCache();
           // Redirect to login if accessing a protected route
-          const path = typeof window !== "undefined" ? window.location.pathname : "/";
-          console.log("[AuthProvider] Current path:", path);
-          const isProtectedRoute =
-            path.startsWith("/dashboard") ||
-            path.startsWith("/chat") ||
-            path.startsWith("/comparison") ||
-            path.startsWith("/projects") ||
-            path.startsWith("/tracking");
-
           console.log("[AuthProvider] Is protected route:", isProtectedRoute);
           if (isProtectedRoute) {
             console.log("[AuthProvider] Protected route detected, redirecting to login");
@@ -86,7 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    console.log("[AuthProvider] useEffect running");
     validateAuth();
   }, [router]);
 
