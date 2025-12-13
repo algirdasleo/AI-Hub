@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,47 +16,63 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ email?: boolean; password?: boolean }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("LoginForm: Form submitted");
+    console.log("[LoginForm] Form submitted");
     setError("");
     setFieldErrors({});
     setIsLoading(true);
 
     try {
-      console.log("LoginForm: Calling authService.login()");
+      console.log("[LoginForm] Calling authService.login()");
       const result = await authService.login({ email, password });
-      console.log("LoginForm: Login result:", result);
+      console.log("[LoginForm] Login result:", result);
 
       if (result.isSuccess) {
-        console.log("LoginForm: apiFetch successful, response value:", result.value);
+        console.log("[LoginForm] apiFetch successful, response value:", result.value);
         if (result.value.success) {
-          console.log("LoginForm: Login successful, preparing redirect to dashboard");
-          console.log("LoginForm: Tokens in localStorage:", {
+          console.log("[LoginForm] Login successful, tokens stored in localStorage");
+          console.log("[LoginForm] Tokens in localStorage:", {
             access: localStorage.getItem("access_token")?.substring(0, 50) + "...",
             refresh: localStorage.getItem("refresh_token"),
           });
-          setTimeout(() => {
-            console.log("LoginForm: Executing redirect to dashboard");
-            const url = `${window.location.protocol}//${window.location.host}/dashboard`;
-            console.log("LoginForm: Redirect URL:", url);
-            window.location.href = url;
-          }, 500);
+
+          // Wait for browser to process the Set-Cookie header
+          console.log("[LoginForm] Waiting 1500ms for cookie to be processed...");
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          console.log("[LoginForm] Wait complete, now validating auth");
+
+          // Now validate auth
+          console.log("[LoginForm] Validating auth after cookie processing");
+          const authResult = await authService.getCurrentUser();
+          console.log("[LoginForm] Auth validation result:", authResult);
+
+          if (authResult.isSuccess && authResult.value.success) {
+            console.log("[LoginForm] Auth confirmed, user:", authResult.value.user.email);
+            console.log("[LoginForm] Redirecting to dashboard with router.push");
+            router.push("/dashboard");
+            console.log("[LoginForm] router.push called, should navigate shortly");
+          } else {
+            console.log("[LoginForm] Auth validation failed", authResult);
+            setError("Authentication validation failed, please try again");
+            setIsLoading(false);
+          }
         } else {
-          console.log("LoginForm: Response success is false");
+          console.log("[LoginForm] Response success is false");
           setFieldErrors({ email: true, password: true });
           setError("Incorrect email or password");
           setIsLoading(false);
         }
       } else {
-        console.log("LoginForm: apiFetch failed:", result.error);
+        console.log("[LoginForm] apiFetch failed:", result.error);
         setFieldErrors({ email: true, password: true });
         setError("Incorrect email or password");
         setIsLoading(false);
       }
     } catch (err) {
-      console.error("LoginForm: Unexpected error:", err);
+      console.error("[LoginForm] Unexpected error:", err);
       setFieldErrors({ email: true, password: true });
       setError("An unexpected error occurred");
       setIsLoading(false);

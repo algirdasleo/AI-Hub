@@ -26,7 +26,7 @@ export const setAuthCookies = (res: Response, accessToken: string, refreshToken:
   const cookieOptions = {
     httpOnly: true,
     secure: isProduction,
-    sameSite: "none" as const,
+    sameSite: isProduction ? ("none" as const) : ("lax" as const),
   };
 
   res.cookie("sb-access-token", accessToken, cookieOptions);

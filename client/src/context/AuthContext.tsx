@@ -39,34 +39,35 @@ const clearUserCache = () => {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const validateAuth = async () => {
       try {
-        console.log("AuthProvider: Starting validation");
+        console.log("[AuthProvider] Starting validation");
         const cachedUser = getCachedUser();
         if (cachedUser) {
-          console.log("AuthProvider: Found cached user:", cachedUser.email);
+          console.log("[AuthProvider] Found cached user:", cachedUser.email);
           setUser(cachedUser);
         }
 
-        console.log("AuthProvider: Calling getCurrentUser()");
+        console.log("[AuthProvider] Calling getCurrentUser()");
         const result = await authService.getCurrentUser();
-        console.log("AuthProvider: getCurrentUser result:", result);
+        console.log("[AuthProvider] getCurrentUser result:", result);
 
         if (result.isSuccess && result.value.success) {
           const authenticatedUser = result.value.user;
-          console.log("AuthProvider: User authenticated:", authenticatedUser.email);
+          console.log("[AuthProvider] User authenticated:", authenticatedUser.email);
           setUser(authenticatedUser);
           cacheUser(authenticatedUser);
+          console.log("[AuthProvider] User set and cached successfully");
         } else {
-          console.log("AuthProvider: Authentication failed");
+          console.log("[AuthProvider] Authentication failed", result);
           setUser(null);
           clearUserCache();
           // Redirect to login if accessing a protected route
           const path = typeof window !== "undefined" ? window.location.pathname : "/";
+          console.log("[AuthProvider] Current path:", path);
           const isProtectedRoute =
             path.startsWith("/dashboard") ||
             path.startsWith("/chat") ||
@@ -74,32 +75,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             path.startsWith("/projects") ||
             path.startsWith("/tracking");
 
+          console.log("[AuthProvider] Is protected route:", isProtectedRoute);
           if (isProtectedRoute) {
-            console.log("AuthProvider: Protected route detected, redirecting to login");
+            console.log("[AuthProvider] Protected route detected, redirecting to login");
             router.push("/auth/login");
           }
         }
-      } finally {
-        setIsLoading(false);
+      } catch (err) {
+        console.error("[AuthProvider] Error during validation:", err);
       }
     };
 
+    console.log("[AuthProvider] useEffect running");
     validateAuth();
   }, [router]);
 
   const logout = async () => {
-    await authService.logout();
-    console.log("AuthProvider: User logged out");
+    console.log("[AuthProvider] Logging out user");
     setUser(null);
+    console.log("[AuthProvider] User set to null immediately");
     clearUserCache();
+    console.log("[AuthProvider] User cache cleared");
+    await authService.logout();
+    console.log("[AuthProvider] authService.logout() completed");
     router.push("/auth/login");
+    console.log("[AuthProvider] Navigated to login");
   };
 
-  return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, setUser, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
