@@ -67,7 +67,7 @@ export default function DashboardPage({ searchParams }: { searchParams?: Promise
     <SidebarProvider>
       <AppSidebar
         onNavigate={(to) => setViewAndUrl(to)}
-        currentView={view === "chat" ? "chat" : "comparison"}
+        currentView={view}
         selectedConversationId={selectedConversationId}
         onConversationSelect={handleConversationSelect}
         onNewConversation={handleNewConversation}

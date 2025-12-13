@@ -13,21 +13,15 @@ export default function LoginPage() {
   useEffect(() => {
     console.log("[LoginPage] useEffect running, user:", user?.email);
     if (user) {
-      console.log("[LoginPage] User is logged in, redirecting to dashboard");
-      router.push("/dashboard");
+      // Check if token still exists before redirecting
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+      console.log("[LoginPage] Token exists:", !!token);
+      if (token) {
+        console.log("[LoginPage] User is logged in, redirecting to dashboard");
+        router.push("/dashboard");
+      }
     }
   }, [user, router]);
-
-  // Show redirecting state while user is logged in
-  if (user) {
-    return (
-      <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-        <div className="flex w-full max-w-sm flex-col gap-6 items-center">
-          <p className="text-muted-foreground">Redirecting to dashboard...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">

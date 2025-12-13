@@ -77,7 +77,7 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   onNavigate?: (to: string) => void;
-  currentView?: "chat" | "comparison";
+  currentView?: string;
   selectedConversationId?: string;
   onConversationSelect?: (conversationId: string) => void;
   onNewConversation?: () => void;
@@ -88,15 +88,17 @@ export function AppSidebar({
         <TeamSwitcher teams={data.teams} />
         <NavMain items={data.navMain} onNavigate={onNavigate} />
       </SidebarHeader>
-      <SidebarContent>
-        <NavConversations
-          currentView={currentView}
-          selectedConversationId={selectedConversationId}
-          onConversationSelect={onConversationSelect}
-          onNewConversation={onNewConversation}
-        />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-      </SidebarContent>
+      {(currentView === "chat" || currentView === "comparison") && (
+        <SidebarContent>
+          <NavConversations
+            currentView={currentView}
+            selectedConversationId={selectedConversationId}
+            onConversationSelect={onConversationSelect}
+            onNewConversation={onNewConversation}
+          />
+          <NavSecondary items={data.navSecondary} className="mt-auto" />
+        </SidebarContent>
+      )}
       <SidebarRail />
     </Sidebar>
   );
