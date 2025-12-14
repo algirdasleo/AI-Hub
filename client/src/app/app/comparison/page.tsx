@@ -6,8 +6,8 @@ import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 export default function ComparisonPage() {
   return (
     <DashboardLayout title="Compare">
-      {({ selectedConversationId }) => (
-        <ComparisonPanel selectedConversationId={selectedConversationId} />
+      {({ selectedConversationId, onNewConversation }) => (
+        <ComparisonPanel selectedConversationId={selectedConversationId} onNewConversation={onNewConversation} />
       )}
     </DashboardLayout>
   );

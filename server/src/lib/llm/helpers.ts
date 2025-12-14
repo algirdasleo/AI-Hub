@@ -3,11 +3,13 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { AIProvider } from "@shared/config/index.js";
 import { ErrorType, Result } from "@shared/utils/index.js";
-import { TextStreamPart, ToolSet } from "ai";
+import { TextStreamPart, ToolSet, ModelMessage } from "ai";
 import { Response } from "express";
 import { ModelStreamBaseData, ModelStreamLatencyData } from "@shared/types/comparison/model-stream-data.js";
 import { buildErrorPayload, buildLatencyMsPayload, buildTextPayload } from "@server/lib/stream/payloads.js";
 import { sendModelError, sendModelText, sendLatencyMs } from "@server/lib/stream/helpers.js";
+import { MessageRole } from "@shared/types/chat/index.js";
+import { ComparisonOutput } from "@shared/types/comparison/conversation.js";
 
 export const PROVIDER_CLIENTS = {
   [AIProvider.OpenAI]: openai,
@@ -87,4 +89,47 @@ export function handleStreamPart(
     }
   }
   return { shouldContinue: true, firstTokenSent };
+}
+
+export function mapChatRepositoryToModelMessages(
+  messages: Array<{
+    id: string;
+    role: MessageRole;
+    content: string;
+    created_at?: string;
+  }>,
+): ModelMessage[] {
+  return messages.map((msg) => ({
+    role: msg.role === MessageRole.USER ? ("user" as const) : ("assistant" as const),
+    content: msg.content,
+  }));
+}
+
+export function mapComparisonRepositoryToModelMessages(
+  prompts: Array<{
+    content: string;
+    outputs?: ComparisonOutput[];
+  }>,
+  modelId: string,
+): ModelMessage[] {
+  const messages: ModelMessage[] = [];
+
+  for (const prompt of prompts) {
+    messages.push({
+      role: "user",
+      content: prompt.content,
+    });
+
+    if (prompt.outputs) {
+      const modelOutput = prompt.outputs.find((output) => output.model === modelId);
+      if (modelOutput) {
+        messages.push({
+          role: "assistant",
+          content: modelOutput.content,
+        });
+      }
+    }
+  }
+
+  return messages;
 }

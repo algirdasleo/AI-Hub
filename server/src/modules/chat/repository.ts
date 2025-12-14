@@ -183,7 +183,20 @@ export async function getConversationMessages(conversationId: string, userId: st
 
     const { data, error } = await supabaseServer
       .from(Tables.CHAT_MESSAGES)
-      .select("id, role, content, created_at")
+      .select(
+        `
+        id,
+        role,
+        content,
+        created_at,
+        stats:chat_message_stats(
+          id,
+          tokens_used,
+          cost_usd,
+          latency_ms
+        )
+      `,
+      )
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 

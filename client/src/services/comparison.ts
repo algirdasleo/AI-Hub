@@ -4,7 +4,9 @@ import { ComparisonStreamParams } from "@shared/types/comparison/comparison-requ
 import {
   GetComparisonConversationsResponseDTO,
   GetComparisonPromptsResponseDTO,
+  ComparisonPrompt,
 } from "@shared/types/comparison/conversation";
+import { Result } from "@shared/utils/result";
 
 export const comparisonService = {
   async createComparisonJob(params: ComparisonStreamParams) {
@@ -25,9 +27,21 @@ export const comparisonService = {
     });
   },
 
-  async getMessages(conversationId: string) {
-    return apiFetch<GetComparisonPromptsResponseDTO>(`/api/comparison/conversations/${conversationId}/messages`, {
-      method: "GET",
-    });
+  async getMessages(conversationId: string): Promise<Result<GetComparisonPromptsResponseDTO>> {
+    const result = await apiFetch<GetComparisonPromptsResponseDTO>(
+      `/api/comparison/conversations/${conversationId}/messages`,
+      {
+        method: "GET",
+      },
+    );
+
+    if (result.isSuccess) {
+      const filteredPrompts = result.value.filter(
+        (prompt: ComparisonPrompt) => prompt.outputs && prompt.outputs.length > 0,
+      );
+      return Result.ok(filteredPrompts);
+    }
+
+    return result;
   },
 };

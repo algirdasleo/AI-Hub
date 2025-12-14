@@ -12,6 +12,11 @@ export interface ConversationMessage {
   role: "user" | "assistant";
   content?: string;
   model?: string;
+  stats?: {
+    tokens_used: number;
+    cost_usd: number;
+    latency_ms: number | null;
+  };
 }
 
 interface DatabaseMessage {
@@ -55,11 +60,21 @@ export function useConversationMessages(conversationId: string | null, viewType:
               }
             }
 
-            return {
+            const message: ConversationMessage = {
               id: msg.id,
               role: msg.role === "user" ? "user" : "assistant",
               content,
             };
+
+            // Handle both single object and array of stats from Supabase
+            if ("stats" in msg && msg.stats) {
+              const statsData = Array.isArray(msg.stats) ? msg.stats[0] : msg.stats;
+              if (statsData) {
+                message.stats = statsData;
+              }
+            }
+
+            return message;
           });
           setMessages(chatMessages);
           setComparisonPrompts([]);
@@ -80,12 +95,22 @@ export function useConversationMessages(conversationId: string | null, viewType:
             });
 
             prompt.outputs.forEach((output) => {
-              comparisonMessages.push({
+              const message: ConversationMessage = {
                 id: output.id,
                 role: "assistant",
                 content: output.content,
                 model: output.model,
-              });
+              };
+
+              if (output.stats && output.stats.length > 0) {
+                message.stats = {
+                  tokens_used: output.stats[0].tokens_used,
+                  cost_usd: output.stats[0].cost_usd,
+                  latency_ms: output.stats[0].latency_ms,
+                };
+              }
+
+              comparisonMessages.push(message);
             });
           });
 

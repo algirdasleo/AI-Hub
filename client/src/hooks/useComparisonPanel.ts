@@ -39,6 +39,24 @@ export interface ComparisonResponse {
   resetConversation: () => void;
 }
 
+// Helper to update model in currentModels array
+const updateCurrentModel = (
+  models: ComparisonModel[],
+  modelId: string,
+  updater: (model: ComparisonModel) => Partial<ComparisonModel>,
+) => models.map((model) => (model.modelId === modelId ? { ...model, ...updater(model) } : model));
+
+// Helper to update model in history
+const updateHistoryModel = (
+  history: ComparisonHistoryItem[],
+  comparisonId: string,
+  modelId: string,
+  updater: (model: ComparisonModel) => Partial<ComparisonModel>,
+) =>
+  history.map((item) =>
+    item.id === comparisonId ? { ...item, models: updateCurrentModel(item.models, modelId, updater) } : item,
+  );
+
 export function useComparisonPanel(initialConversationId?: string): ComparisonResponse {
   const [currentModels, setCurrentModels] = useState<ComparisonModel[]>([]);
   const [history, setHistory] = useState<ComparisonHistoryItem[]>([]);
@@ -53,9 +71,7 @@ export function useComparisonPanel(initialConversationId?: string): ComparisonRe
   }, [conversationId]);
 
   useEffect(() => {
-    if (initialConversationId) {
-      setConversationId(initialConversationId);
-    }
+    setConversationId(initialConversationId);
   }, [initialConversationId]);
 
   const startComparison = useCallback(async (params: ComparisonStreamParams) => {
@@ -105,136 +121,45 @@ export function useComparisonPanel(initialConversationId?: string): ComparisonRe
       streamHandler
         .on(EventType.TEXT, (data) => {
           const { modelId, text } = data;
-
-          setCurrentModels((prev) =>
-            prev.map((model) =>
-              model.modelId === modelId
-                ? {
-                    ...model,
-                    content: model.content + text,
-                  }
-                : model,
-            ),
-          );
-
+          setCurrentModels((prev) => updateCurrentModel(prev, modelId, (m) => ({ content: m.content + text })));
           setHistory((prev) =>
-            prev.map((item) =>
-              item.id === comparisonId
-                ? {
-                    ...item,
-                    models: item.models.map((model) =>
-                      model.modelId === modelId ? { ...model, content: model.content + text } : model,
-                    ),
-                  }
-                : item,
-            ),
+            updateHistoryModel(prev, comparisonId, modelId, (m) => ({ content: m.content + text })),
           );
         })
         .on(EventType.LATENCY_MS, (data) => {
           const { modelId, ms } = data;
-
-          setCurrentModels((prev) =>
-            prev.map((model) =>
-              model.modelId === modelId
-                ? {
-                    ...model,
-                    latencyMs: ms,
-                  }
-                : model,
-            ),
-          );
-
-          setHistory((prev) =>
-            prev.map((item) =>
-              item.id === comparisonId
-                ? {
-                    ...item,
-                    models: item.models.map((model) =>
-                      model.modelId === modelId ? { ...model, latencyMs: ms } : model,
-                    ),
-                  }
-                : item,
-            ),
-          );
+          setCurrentModels((prev) => updateCurrentModel(prev, modelId, () => ({ latencyMs: ms })));
+          setHistory((prev) => updateHistoryModel(prev, comparisonId, modelId, () => ({ latencyMs: ms })));
         })
         .on(EventType.USAGE, (data) => {
           const { modelId, inputTokens, outputTokens, totalTokens } = data;
-
           const usage = { inputTokens, outputTokens, totalTokens };
-
-          setCurrentModels((prev) =>
-            prev.map((model) =>
-              model.modelId === modelId
-                ? {
-                    ...model,
-                    usage,
-                  }
-                : model,
-            ),
-          );
-
-          setHistory((prev) =>
-            prev.map((item) =>
-              item.id === comparisonId
-                ? {
-                    ...item,
-                    models: item.models.map((model) => (model.modelId === modelId ? { ...model, usage } : model)),
-                  }
-                : item,
-            ),
-          );
+          setCurrentModels((prev) => updateCurrentModel(prev, modelId, () => ({ usage })));
+          setHistory((prev) => updateHistoryModel(prev, comparisonId, modelId, () => ({ usage })));
         })
         .on(EventType.COMPLETE, (data) => {
           if (data && "modelId" in data) {
             const { modelId } = data as { modelId: string };
-
-            setCurrentModels((prev) =>
-              prev.map((model) => (model.modelId === modelId ? { ...model, isLoading: false } : model)),
-            );
-
-            setHistory((prev) =>
-              prev.map((item) =>
-                item.id === comparisonId
-                  ? {
-                      ...item,
-                      models: item.models.map((model) =>
-                        model.modelId === modelId ? { ...model, isLoading: false } : model,
-                      ),
-                    }
-                  : item,
-              ),
-            );
+            setCurrentModels((prev) => updateCurrentModel(prev, modelId, () => ({ isLoading: false })));
+            setHistory((prev) => updateHistoryModel(prev, comparisonId, modelId, () => ({ isLoading: false })));
 
             setCurrentModels((currentModels) => {
               const allComplete = currentModels.every((model) => model.modelId === modelId || !model.isLoading);
-
               if (allComplete) {
                 setIsStreaming(false);
                 setHistory((prev) =>
                   prev.map((item) => (item.id === comparisonId ? { ...item, isComplete: true } : item)),
                 );
               }
-
               return currentModels;
             });
           } else {
             setIsStreaming(false);
-
-            setCurrentModels((prev) =>
-              prev.map((model) => ({
-                ...model,
-                isLoading: false,
-              })),
-            );
-
+            setCurrentModels((prev) => prev.map((model) => ({ ...model, isLoading: false })));
             setHistory((prev) =>
               prev.map((item) =>
                 item.id === comparisonId
-                  ? {
-                      ...item,
-                      isComplete: true,
-                      models: item.models.map((model) => ({ ...model, isLoading: false })),
-                    }
+                  ? { ...item, isComplete: true, models: item.models.map((m) => ({ ...m, isLoading: false })) }
                   : item,
               ),
             );
@@ -243,42 +168,18 @@ export function useComparisonPanel(initialConversationId?: string): ComparisonRe
         .on(EventType.ERROR, (data) => {
           console.error("Comparison streaming error:", data);
           const { modelId, error } = data;
-
+          const errorMsg = error || "Streaming error occurred";
           setCurrentModels((prev) =>
-            prev.map((model) =>
-              model.modelId === modelId
-                ? {
-                    ...model,
-                    isLoading: false,
-                    error: error || "Streaming error occurred",
-                  }
-                : model,
-            ),
+            updateCurrentModel(prev, modelId, () => ({ isLoading: false, error: errorMsg })),
           );
-
           setHistory((prev) =>
-            prev.map((item) =>
-              item.id === comparisonId
-                ? {
-                    ...item,
-                    models: item.models.map((model) =>
-                      model.modelId === modelId
-                        ? { ...model, isLoading: false, error: error || "Streaming error occurred" }
-                        : model,
-                    ),
-                  }
-                : item,
-            ),
+            updateHistoryModel(prev, comparisonId, modelId, () => ({ isLoading: false, error: errorMsg })),
           );
         })
         .onConnectionError((error) => {
           console.error("Connection error:", error);
           setCurrentModels((prev) =>
-            prev.map((model) => ({
-              ...model,
-              isLoading: false,
-              error: "Connection error occurred",
-            })),
+            prev.map((model) => ({ ...model, isLoading: false, error: "Connection error occurred" })),
           );
           setIsStreaming(false);
         });
@@ -311,6 +212,7 @@ export function useComparisonPanel(initialConversationId?: string): ComparisonRe
 
   const resetConversation = useCallback(() => {
     setConversationId(undefined);
+    conversationIdRef.current = undefined;
     setHistory([]);
     setCurrentModels([]);
   }, []);

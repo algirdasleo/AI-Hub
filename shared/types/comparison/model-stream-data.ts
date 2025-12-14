@@ -36,20 +36,17 @@ export const ModelStreamUsageDataSchema = ModelStreamBaseDataSchema.extend({
 export type ModelStreamUsageData = z.infer<typeof ModelStreamUsageDataSchema>;
 
 export const ModelStreamDTO = z.discriminatedUnion("event", [
-  z
-    .strictObject({
-      event: z.literal(EventType.TEXT),
-    })
-    .extend(ModelStreamTextDataSchema),
+  z.strictObject({
+    event: z.literal(EventType.TEXT),
+    ...ModelStreamTextDataSchema.shape,
+  }),
 
-  z
-    .strictObject({
-      event: z.literal(EventType.LATENCY_MS),
-    })
-    .extend(ModelStreamLatencyDataSchema),
-  z
-    .strictObject({
-      event: z.literal(EventType.ERROR),
-    })
-    .extend(ModelStreamErrorDataSchema),
+  z.strictObject({
+    event: z.literal(EventType.LATENCY_MS),
+    ...ModelStreamLatencyDataSchema.shape,
+  }),
+  z.strictObject({
+    event: z.literal(EventType.ERROR),
+    ...ModelStreamErrorDataSchema.shape,
+  }),
 ]);

@@ -6,11 +6,13 @@ import { Response } from "express";
 import { LanguageModelV2Usage } from "@ai-sdk/provider";
 import { streamModel } from "@server/lib/llm/streaming.js";
 import { setupStreamHeaders, sendUsage, sendStreamComplete, buildUsagePayload } from "@server/lib/stream/index.js";
+import { mapChatRepositoryToModelMessages } from "@server/lib/llm/helpers.js";
 import {
   insertChatMessageStats,
   updateUsageAggregates,
   createChatConversation,
   addMessage,
+  getConversationMessages,
 } from "./repository.js";
 import { MessageRole } from "@shared/types/chat/index.js";
 import { ChatJobPayloadResult, ChatStreamExecutionParams } from "./types.js";
@@ -58,10 +60,19 @@ export async function executeChatStream(
 
     setupStreamHeaders(res);
 
+    const messagesResult = await getConversationMessages(params.conversationId, userId);
+    const currentUserMessage = { role: "user" as const, content: params.prompt };
+    let conversationMessages: any[] = [currentUserMessage];
+
+    if (messagesResult.isSuccess && messagesResult.value.length > 0) {
+      const previousMessages = mapChatRepositoryToModelMessages(messagesResult.value.slice(0, -1));
+      conversationMessages = [...previousMessages, currentUserMessage];
+    }
+
     const { success, usage, latencyMs, content } = await streamModel(
       res,
       selectedModel,
-      [{ role: UserRole.USER, content: params.prompt }],
+      conversationMessages,
       params.systemPrompt,
       params.useWebSearch,
     );

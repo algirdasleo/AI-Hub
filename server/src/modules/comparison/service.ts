@@ -7,12 +7,14 @@ import { ModelStreamBaseData } from "@shared/types/comparison/model-stream-data.
 import { SelectedModel, SelectedModelSchema } from "@shared/config/model-schemas.js";
 import { SettledResult } from "@server/lib/llm/types.js";
 import { setupStreamHeaders, sendStreamComplete } from "@server/lib/stream/helpers.js";
+import { mapComparisonRepositoryToModelMessages } from "@server/lib/llm/helpers.js";
 import {
   insertComparisonOutput,
   insertComparisonOutputStats,
   updateUsageAggregates,
   createComparisonConversation,
   insertComparisonPrompt,
+  getComparisonConversationPrompts,
 } from "./repository.js";
 import { ComparisonJobPayloadResult, ComparisonStreamExecutionParams } from "./types.js";
 
@@ -61,20 +63,40 @@ export async function executeComparisonStream(
 
     setupStreamHeaders(res);
 
-    const models = parsedModels.map((selectedModel) => ({
-      selectedModel,
-      modelMessages: [{ role: "user" as const, content: params.prompt }],
-      modelInfo: { modelId: selectedModel.modelId } as ModelStreamBaseData,
-    }));
+    const promptsResult = await getComparisonConversationPrompts(params.conversationId, userId);
+
+    const models = parsedModels.map((selectedModel) => {
+      const currentUserMessage = { role: "user" as const, content: params.prompt };
+      let modelMessages: any[] = [currentUserMessage];
+
+      if (promptsResult.isSuccess && promptsResult.value.length > 0) {
+        const previousMessages = mapComparisonRepositoryToModelMessages(
+          promptsResult.value,
+          selectedModel.modelId,
+        );
+        modelMessages = [...previousMessages, currentUserMessage];
+      }
+
+      return {
+        selectedModel,
+        modelMessages,
+        modelInfo: { modelId: selectedModel.modelId } as ModelStreamBaseData,
+      };
+    });
 
     const settledResults = await streamMultipleModels(res, models, params.systemPrompt, params.useWebSearch);
-    sendStreamComplete(res);
 
-    saveComparisonResults(settledResults, parsedModels, params.promptId, userId, params.conversationId).catch(
-      (err: unknown) => {
-        console.warn("Failed to save comparison results:", err);
-      },
-    );
+    await saveComparisonResults(
+      settledResults,
+      parsedModels,
+      params.promptId,
+      userId,
+      params.conversationId,
+    ).catch((err: unknown) => {
+      console.warn("Failed to save comparison results:", err);
+    });
+
+    sendStreamComplete(res);
 
     return Result.okVoid();
   } catch (error) {

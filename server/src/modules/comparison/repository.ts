@@ -171,7 +171,13 @@ export async function getComparisonConversationPrompts(conversationId: string, u
           model,
           role,
           content,
-          created_at
+          created_at,
+          stats:comparison_output_stats(
+            id,
+            tokens_used,
+            cost_usd,
+            latency_ms
+          )
         )
       `,
       )

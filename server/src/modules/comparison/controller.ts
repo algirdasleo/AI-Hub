@@ -1,7 +1,11 @@
 import { Response } from "express";
 import z from "zod";
 import { ModelStreamErrorData } from "@shared/types/comparison/model-stream-data.js";
-import { ComparisonStreamSchema } from "@shared/types/comparison/comparison-request.js";
+import {
+  ComparisonStreamSchema,
+  ComparisonJobResponseSchema,
+  ComparisonJobResponse,
+} from "@shared/types/comparison/index.js";
 import {
   GetComparisonConversationsResponseDTO,
   GetComparisonPromptsResponseDTO,
@@ -52,7 +56,11 @@ export async function createComparisonJob(req: AuthRequest, res: Response) {
     };
 
     const uid = await createJob(jobPayload);
-    res.status(201).json({ uid });
+    const response: ComparisonJobResponse = {
+      uid,
+      conversationId,
+    };
+    res.status(201).json(response);
   } catch (error) {
     sendInternalError(res, String(error));
   }

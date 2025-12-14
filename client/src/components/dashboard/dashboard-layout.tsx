@@ -8,7 +8,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { usePathname } from "next/navigation";
 
 export interface DashboardLayoutProps {
-  children: ReactNode | ((props: { selectedConversationId?: string }) => ReactNode);
+  children: ReactNode | ((props: { selectedConversationId?: string; onNewConversation: () => void }) => ReactNode);
   title: string;
   extraHeaderContent?: ReactNode;
 }
@@ -55,7 +55,9 @@ export function DashboardLayout({ children, title, extraHeaderContent }: Dashboa
 
         <div className="flex flex-1 justify-center">
           <div className="w-full max-w-6xl px-4">
-            {typeof children === "function" ? children({ selectedConversationId }) : children}
+            {typeof children === "function"
+              ? children({ selectedConversationId, onNewConversation: handleNewConversation })
+              : children}
           </div>
         </div>
       </SidebarInset>

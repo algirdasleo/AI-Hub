@@ -10,6 +10,19 @@ export interface Message {
   role: MessageRole;
   content?: string;
   isStreaming?: boolean;
+  model?: string;
+  modelId?: string;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+  };
+  latencyMs?: number | null;
+  stats?: {
+    tokens_used: number;
+    cost_usd: number;
+    latency_ms: number | null;
+  };
 }
 
 interface MessageDisplayProps {
@@ -71,8 +84,46 @@ export function MessageDisplay({
                         {message.content}
                       </div>
                     ) : (
-                      <div className="bg-muted px-3 py-2 rounded-lg inline-block max-w-[90%]">
-                        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                      <div className="space-y-1">
+                        <div className="bg-muted px-3 py-2 rounded-lg inline-block max-w-[90%]">
+                          <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                        </div>
+                        {(message.usage || message.stats) && (
+                          <div className="text-xs text-muted-foreground space-y-0.5 px-3">
+                            {message.usage ? (
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="flex items-center gap-1 cursor-help"
+                                  title={`Input: ${message.usage.inputTokens} • Output: ${message.usage.outputTokens} • Total: ${message.usage.totalTokens}`}
+                                >
+                                  <span>🎯</span>
+                                  <span>{message.usage.totalTokens} tokens</span>
+                                </div>
+                                {message.latencyMs !== null && message.latencyMs !== undefined && (
+                                  <div className="flex items-center gap-1">
+                                    <span>⏱️</span>
+                                    <span>{message.latencyMs}ms</span>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <>
+                                {message.model && <div>{message.model}</div>}
+                                <div className="space-x-2">
+                                  {message.stats && message.stats.tokens_used > 0 && (
+                                    <span>{message.stats.tokens_used} tokens</span>
+                                  )}
+                                  {message.stats && message.stats.cost_usd > 0 && (
+                                    <span>${message.stats.cost_usd.toFixed(6)}</span>
+                                  )}
+                                  {message.stats && message.stats.latency_ms !== null && (
+                                    <span>{message.stats.latency_ms}ms</span>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   ) : (

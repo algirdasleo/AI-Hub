@@ -24,12 +24,22 @@ export enum MessageRole {
   SYSTEM = "system",
 }
 
+export const ChatMessageStatsSchema = z.strictObject({
+  id: z.uuid(),
+  tokens_used: z.number(),
+  cost_usd: z.number(),
+  latency_ms: z.number().nullable(),
+});
+
+export type ChatMessageStats = z.infer<typeof ChatMessageStatsSchema>;
+
 export const UIMessageSchema = z.strictObject({
   id: z.string(),
   role: z.enum(Object.values(MessageRole)),
   parts: z.array(PartSchema),
   tools: z.record(z.string(), z.unknown()).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
+  stats: ChatMessageStatsSchema.optional(),
 });
 
 export type UIMessage = z.infer<typeof UIMessageSchema>;

@@ -4,8 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Square } from "lucide-react";
 import { MultiModelSelector } from "@/components/dashboard/shared/multi-model-selector";
-import { ModelResponseCard } from "@/components/dashboard/shared/model-response-card";
-import { ConversationHistoryItem } from "@/components/dashboard/shared/conversation-history-item";
+import { ComparisonItem } from "@/components/dashboard/shared/comparison-item";
 import { MessageInput } from "@/components/dashboard/shared";
 import { useComparisonPanel } from "@/hooks/useComparisonPanel";
 import { useConversationMessages } from "@/hooks/useConversationMessages";
@@ -14,11 +13,18 @@ import { MODELS } from "@shared/config/models";
 import type { ComparisonStreamParams } from "@shared/types/comparison/comparison-request";
 import { transformComparisonPromptsToHistory } from "@/lib/comparison-utils";
 
-export default function ComparisonPanel({ selectedConversationId }: { selectedConversationId?: string }) {
+export default function ComparisonPanel({
+  selectedConversationId,
+  onNewConversation,
+}: {
+  selectedConversationId?: string;
+  onNewConversation?: () => void;
+}) {
   const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
   const [currentPrompt, setCurrentPrompt] = useState("");
   const [hasStarted, setHasStarted] = useState(false);
   const [useWebSearch, setUseWebSearch] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const {
     currentModels,
     history,
@@ -36,11 +42,15 @@ export default function ComparisonPanel({ selectedConversationId }: { selectedCo
 
   const conversationHistory = transformComparisonPromptsToHistory(comparisonPrompts);
 
+  // Load history once when a conversation is selected
   useEffect(() => {
-    if (conversationId && !isStreaming) {
+    if (selectedConversationId) {
+      setHistoryLoaded(true);
       refetch();
+    } else {
+      setHistoryLoaded(false);
     }
-  }, [conversationId, isStreaming, refetch]);
+  }, [selectedConversationId, refetch]);
 
   useEffect(() => {
     if (selectedConversationId === undefined) {
@@ -90,6 +100,10 @@ export default function ComparisonPanel({ selectedConversationId }: { selectedCo
   };
 
   const canStart = currentPrompt.trim() && selectedModelIds.length >= 2 && !isStreaming;
+
+  // Determine which history to display
+  const displayHistoryItems =
+    selectedConversationId && historyLoaded ? conversationHistory : history.filter((h) => h.isComplete);
 
   return (
     <div className="flex flex-col h-full">
@@ -157,6 +171,7 @@ export default function ComparisonPanel({ selectedConversationId }: { selectedCo
                   <Button
                     onClick={() => {
                       resetConversation();
+                      onNewConversation?.();
                     }}
                     variant="outline"
                     size="sm"
@@ -175,52 +190,20 @@ export default function ComparisonPanel({ selectedConversationId }: { selectedCo
           <div className="flex-1 overflow-hidden relative">
             <ScrollArea className="h-full">
               <div className="p-4 space-y-6">
-                {/* Show conversation history from database when we have a conversationId */}
-                {conversationId && conversationHistory.length > 0 && !isLoadingHistory && (
-                  <div className="space-y-4">
-                    {conversationHistory.map((historyItem) => (
-                      <ConversationHistoryItem key={historyItem.id} historyItem={historyItem} />
-                    ))}
-                  </div>
-                )}
-
-                {/* Show loading state */}
-                {conversationId && isLoadingHistory && (
+                {selectedConversationId && isLoadingHistory && (
                   <div className="text-sm text-muted-foreground">Loading history...</div>
                 )}
 
-                {/* Show in-memory history only when we don't have a conversationId yet (initial state) */}
-                {!conversationId &&
-                  history
-                    .filter((historyItem) => historyItem.isComplete)
-                    .map((historyItem) => (
-                      <ConversationHistoryItem key={historyItem.id} historyItem={historyItem} />
-                    ))}
+                {displayHistoryItems.map((historyItem) => (
+                  <ComparisonItem key={historyItem.id} historyItem={historyItem} />
+                ))}
 
                 {isStreaming && currentModels.length > 0 && (
-                  <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                          Currently comparing...
-                        </span>
-                      </div>
-                      <div className="bg-muted p-3 rounded-lg">
-                        <p className="text-sm font-medium mb-1">Current Prompt:</p>
-                        <p className="text-sm">
-                          {history.find((item) => !item.isComplete)?.prompt || "Processing..."}
-                        </p>
-                      </div>
-                    </div>
-                    <div className={`grid gap-4 ${currentModels.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
-                      {currentModels.map((model) => (
-                        <div key={model.modelId} className="max-h-96 overflow-hidden">
-                          <ModelResponseCard model={model} isStreaming={isStreaming} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <ComparisonItem
+                    prompt={history.find((item) => !item.isComplete)?.prompt || "Processing..."}
+                    currentModels={currentModels}
+                    isStreaming={true}
+                  />
                 )}
               </div>
             </ScrollArea>

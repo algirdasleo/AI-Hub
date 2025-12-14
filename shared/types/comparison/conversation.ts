@@ -9,12 +9,22 @@ export const ComparisonConversationSchema = z.strictObject({
 
 export type ComparisonConversation = z.infer<typeof ComparisonConversationSchema>;
 
+export const ComparisonOutputStatsSchema = z.strictObject({
+  id: z.uuid(),
+  tokens_used: z.number(),
+  cost_usd: z.number(),
+  latency_ms: z.number().nullable(),
+});
+
+export type ComparisonOutputStats = z.infer<typeof ComparisonOutputStatsSchema>;
+
 export const ComparisonOutputSchema = z.strictObject({
   id: z.uuid(),
   model: z.string(),
   role: z.string(),
   content: z.string(),
   created_at: z.coerce.date(),
+  stats: z.array(ComparisonOutputStatsSchema).default([]).optional(),
 });
 
 export type ComparisonOutput = z.infer<typeof ComparisonOutputSchema>;

@@ -4,7 +4,7 @@ import { MessageRole } from "@shared/types/chat/message";
 import { SSEHandler } from "@/lib/sse-handler";
 import type { ChatStreamParams, ChatJobResponse } from "@shared/types/chat";
 import type { Result } from "@shared/utils";
-import type { ModelStreamTextData, ModelStreamErrorData } from "@shared/types/comparison";
+import type { ModelStreamTextData, ModelStreamErrorData, ModelStreamUsageData } from "@shared/types/comparison";
 import { AIProvider } from "@shared/config/model-schemas";
 
 export interface Message {
@@ -12,6 +12,13 @@ export interface Message {
   role: MessageRole;
   content: string;
   isStreaming?: boolean;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+  };
+  latencyMs?: number | null;
+  modelId?: string;
 }
 
 interface StreamingService {
@@ -100,6 +107,35 @@ export default function useStreamingPanel(service: StreamingService) {
               prev.map((msg) => (msg.id === assistantId ? { ...msg, content: fullText } : msg)),
             );
           }
+        },
+        [EventType.LATENCY_MS]: (data: any) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    latencyMs: data?.ms,
+                  }
+                : msg,
+            ),
+          );
+        },
+        [EventType.USAGE]: (data: ModelStreamUsageData) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    usage: {
+                      inputTokens: data.inputTokens,
+                      outputTokens: data.outputTokens,
+                      totalTokens: data.totalTokens,
+                    },
+                    modelId: data.modelId,
+                  }
+                : msg,
+            ),
+          );
         },
         [EventType.ERROR]: (data: ModelStreamErrorData) => {
           setMessages((prev) =>
