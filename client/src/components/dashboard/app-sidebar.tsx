@@ -54,16 +54,16 @@ const data = {
     // },
   ],
   navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-    },
-    {
-      title: "Docs",
-      url: "#",
-      icon: MessageCircleQuestion,
-    },
+    //   {
+    //     title: "Settings",
+    //     url: "#",
+    //     icon: Settings2,
+    //   },
+    //   {
+    //     title: "Docs",
+    //     url: "#",
+    //     icon: MessageCircleQuestion,
+    //   },
   ],
 };
 
@@ -85,7 +85,7 @@ export function AppSidebar({
         <TeamSwitcher teams={data.teams} />
         <NavMain items={data.navMain} />
       </SidebarHeader>
-      {(currentView === "chat" || currentView === "comparison") && (
+      {(currentView === "chat" || currentView === "comparison") ? (
         <SidebarContent>
           <NavConversations
             currentView={currentView}
@@ -93,6 +93,10 @@ export function AppSidebar({
             onConversationSelect={onConversationSelect}
             onNewConversation={onNewConversation}
           />
+          <NavSecondary items={data.navSecondary} className="mt-auto" />
+        </SidebarContent>
+      ) : (
+        <SidebarContent>
           <NavSecondary items={data.navSecondary} className="mt-auto" />
         </SidebarContent>
       )}
