@@ -7,6 +7,7 @@ vi.mock("../repository.js", () => ({
   addMessage: vi.fn(),
   insertChatMessageStats: vi.fn(),
   updateUsageAggregates: vi.fn(),
+  getConversationMessages: vi.fn(),
 }));
 vi.mock("@server/lib/llm/streaming.js", () => ({ streamModel: vi.fn() }));
 vi.mock("@server/lib/stream/index.js", () => ({
@@ -16,7 +17,7 @@ vi.mock("@server/lib/stream/index.js", () => ({
   buildUsagePayload: vi.fn(),
 }));
 
-import { createChatConversation, addMessage } from "../repository.js";
+import { createChatConversation, addMessage, getConversationMessages } from "../repository.js";
 import { streamModel } from "@server/lib/llm/streaming.js";
 import { createChatJobPayload, executeChatStream } from "../service.js";
 
@@ -75,6 +76,7 @@ describe("chat service", () => {
     };
 
     it("streams successfully and handles errors", async () => {
+      (getConversationMessages as any).mockResolvedValue(Result.ok([]));
       (streamModel as any).mockResolvedValue({
         success: true,
         usage: { totalTokens: 100, inputTokens: 50, outputTokens: 50 },

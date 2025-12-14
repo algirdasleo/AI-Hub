@@ -29,24 +29,25 @@ import { jwtVerify } from "jose";
 import { authMiddleware } from "../auth-middleware.js";
 
 describe("authMiddleware", () => {
+  const mockReq = () => ({ cookies: {}, headers: {}, user: undefined }) as Partial<AuthRequest>;
+  const mockRes = () =>
+    ({
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+      clearCookie: vi.fn(),
+      setHeader: vi.fn(),
+    }) as Partial<Response>;
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  const mockReq = () => ({ cookies: {}, user: undefined }) as Partial<AuthRequest>;
-  const mockRes = () =>
-    ({
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-      clearCookie: vi.fn(),
-    }) as Partial<Response>;
-  const mockNext = vi.fn();
-
   it("should reject requests with missing tokens", async () => {
     const req = mockReq();
     const res = mockRes();
+    const mockNext = vi.fn();
 
     await authMiddleware(req as AuthRequest, res as Response, mockNext);
 
@@ -57,6 +58,7 @@ describe("authMiddleware", () => {
   it("should handle valid token", async () => {
     const req = mockReq();
     const res = mockRes();
+    const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "valid", "sb-refresh-token": "refresh" };
 
     (jwtVerify as any).mockResolvedValue({
@@ -72,12 +74,25 @@ describe("authMiddleware", () => {
   it("should refresh expired token", async () => {
     const req = mockReq();
     const res = mockRes();
+    const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "expired", "sb-refresh-token": "refresh" };
 
-    (jwtVerify as any).mockRejectedValue({
-      code: "ERR_JWT_EXPIRED",
-      claim: "exp",
+    // Mock jwtVerify to fail on first call (expired token check)
+    // and succeed on second call (new token verification)
+    let callCount = 0;
+    (jwtVerify as any).mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.reject({
+          code: "ERR_JWT_EXPIRED",
+          claim: "exp",
+        });
+      }
+      return Promise.resolve({
+        payload: { email: "test@example.com", sub: "1", aud: "authenticated", iat: 1000, exp: 4600 },
+      });
     });
+
     (supabaseServer.auth.refreshSession as any).mockResolvedValue({
       data: {
         session: { access_token: "new", refresh_token: "new", user: { id: "1", email: "test@example.com" } },
@@ -87,13 +102,16 @@ describe("authMiddleware", () => {
 
     await authMiddleware(req as AuthRequest, res as Response, mockNext);
 
+    expect(jwtVerify).toHaveBeenCalledTimes(2);
     expect(setAuthCookies).toHaveBeenCalled();
     expect(mockNext).toHaveBeenCalled();
+    expect(req.user).toBeDefined();
   });
 
   it("should handle refresh failure", async () => {
     const req = mockReq();
     const res = mockRes();
+    const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "expired", "sb-refresh-token": "invalid" };
 
     (jwtVerify as any).mockRejectedValue({
@@ -114,6 +132,7 @@ describe("authMiddleware", () => {
   it("should handle invalid JWT", async () => {
     const req = mockReq();
     const res = mockRes();
+    const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "invalid", "sb-refresh-token": "refresh" };
 
     (jwtVerify as any).mockRejectedValue(new Error("Invalid"));
@@ -127,6 +146,7 @@ describe("authMiddleware", () => {
   it("should handle refresh error exception", async () => {
     const req = mockReq();
     const res = mockRes();
+    const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "expired", "sb-refresh-token": "refresh" };
 
     (jwtVerify as any).mockRejectedValue({ code: "ERR_JWT_EXPIRED" });

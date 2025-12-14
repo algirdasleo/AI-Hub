@@ -8,11 +8,17 @@ vi.mock("../repository.js", () => ({
   insertComparisonOutput: vi.fn(),
   insertComparisonOutputStats: vi.fn(),
   updateUsageAggregates: vi.fn(),
+  getComparisonConversationPrompts: vi.fn(),
 }));
 vi.mock("@server/lib/llm/streaming.js", () => ({ streamMultipleModels: vi.fn() }));
 vi.mock("@server/lib/stream/helpers.js", () => ({ setupStreamHeaders: vi.fn(), sendStreamComplete: vi.fn() }));
 
-import { createComparisonConversation, insertComparisonPrompt, insertComparisonOutput } from "../repository.js";
+import {
+  createComparisonConversation,
+  insertComparisonPrompt,
+  insertComparisonOutput,
+  getComparisonConversationPrompts,
+} from "../repository.js";
 import { streamMultipleModels } from "@server/lib/llm/streaming.js";
 import { createComparisonJobPayload, executeComparisonStream } from "../service.js";
 
@@ -68,6 +74,7 @@ describe("comparison service", () => {
     };
 
     it("streams successfully and handles errors", async () => {
+      (getComparisonConversationPrompts as any).mockResolvedValue(Result.ok([]));
       (streamMultipleModels as any).mockResolvedValue([
         { status: "fulfilled", value: { success: true, usage: { totalTokens: 100 }, content: "Response 1" } },
       ]);

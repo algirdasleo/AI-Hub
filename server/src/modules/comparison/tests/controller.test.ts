@@ -86,7 +86,7 @@ describe("comparison controller", () => {
         } as any,
         res as any,
       );
-      expect(res.json).toHaveBeenCalledWith({ uid: "job-uid" });
+      expect(res.json).toHaveBeenCalledWith({ uid: "job-uid", conversationId: "conv-123" });
 
       (validateAuth as any).mockReturnValue({ isValid: false });
       await createComparisonJob({ user: mockUser } as any, mockRes() as any);

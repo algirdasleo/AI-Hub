@@ -1,6 +1,6 @@
 import z from "zod";
-import { ErrorType } from "@shared/utils/index.js";
-import { EventType } from "@shared/types/core/index.js";
+import { ErrorType } from "../../utils/error-type";
+import { EventType } from "../core/event-types";
 
 export const ModelStreamBaseDataSchema = z.strictObject({
   modelId: z.string().min(1),

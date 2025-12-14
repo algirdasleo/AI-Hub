@@ -54,7 +54,7 @@ describe("AuthService", () => {
         email: "test@example.com",
         password: "password123",
         options: {
-          emailRedirectTo: "undefined/auth/callback",
+          emailRedirectTo: "http://localhost:3000/auth/callback",
           data: {
             display_name: "test",
             role: "user",
@@ -178,7 +178,7 @@ describe("AuthService", () => {
         email: "test@example.com",
         password: "password123",
         options: {
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_URL}/auth/callback`,
+          emailRedirectTo: "http://localhost:3000/auth/callback",
           data: {
             display_name: "John Doe",
             role: "user",
