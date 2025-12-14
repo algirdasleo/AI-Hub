@@ -77,8 +77,6 @@ describe("authMiddleware", () => {
     const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "expired", "sb-refresh-token": "refresh" };
 
-    // Mock jwtVerify to fail on first call (expired token check)
-    // and succeed on second call (new token verification)
     let callCount = 0;
     (jwtVerify as any).mockImplementation(() => {
       callCount++;
