@@ -7,6 +7,7 @@ import {
   CurrentUserResponseDTO,
 } from "@shared/types/auth/response";
 import { User } from "@shared/types/auth/user";
+import { Result } from "@shared/utils/result";
 
 const CACHE_DURATION = 5 * 60 * 1000;
 const TOKEN_EXPIRY_BUFFER = 60 * 1000;
@@ -83,10 +84,7 @@ export const authService = {
 
   async getCurrentUser() {
     if (isCacheValid()) {
-      return {
-        isSuccess: true,
-        value: { success: true, user: userCache! },
-      } as const;
+      return Result.ok({ success: true, user: userCache! });
     }
 
     const result = await apiFetch<CurrentUserResponseDTO>("/api/auth/me", {
@@ -95,11 +93,11 @@ export const authService = {
 
     if (result.isSuccess && result.value.success) {
       updateCache(result.value.user);
+      return Result.ok({ success: true, user: result.value.user });
     } else {
       clearCache();
+      return result as Result<CurrentUserResponseDTO>;
     }
-
-    return result;
   },
 
   clearCache,

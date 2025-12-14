@@ -28,4 +28,10 @@ export const chatService = {
       method: "GET",
     });
   },
+
+  async deleteConversation(conversationId: string) {
+    return apiFetch<{ success: boolean; message: string }>(`/api/chat/conversations/${conversationId}`, {
+      method: "DELETE",
+    });
+  },
 };

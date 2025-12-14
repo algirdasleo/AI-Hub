@@ -33,8 +33,9 @@ export function NavConversations({
   selectedConversationId?: string;
 }) {
   const { isMobile } = useSidebar();
-  const { conversations, isLoading, error } = useConversations(currentView);
+  const { conversations, isLoading, error, deleteConversation } = useConversations(currentView);
   const [showAll, setShowAll] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const getNewButtonText = () => {
     return currentView === "chat" ? "New Chat" : "New Comparison";
@@ -113,9 +114,22 @@ export function NavConversations({
                     <span>Open in New Tab</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={deletingId === conversation.id}
+                    onClick={async () => {
+                      setDeletingId(conversation.id);
+                      try {
+                        const result = await deleteConversation(conversation.id);
+                        if (!result.isSuccess) {
+                          console.error("Failed to delete conversation:", result.error.message);
+                        }
+                      } finally {
+                        setDeletingId(null);
+                      }
+                    }}
+                  >
                     <Trash2 className="text-muted-foreground" />
-                    <span>Delete</span>
+                    <span>{deletingId === conversation.id ? "Deleting..." : "Delete"}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -5,6 +5,7 @@ import { chatService } from "@/services/chat";
 import { comparisonService } from "@/services/comparison";
 import { Conversation } from "@shared/types/chat/conversation";
 import { ComparisonConversation } from "@shared/types/comparison/conversation";
+import { Result } from "@shared/utils/result";
 
 export type ViewType = "chat" | "comparison";
 
@@ -68,10 +69,43 @@ export function useConversations(viewType: ViewType) {
     loadConversations();
   };
 
+  const deleteConversation = async (conversationId: string): Promise<Result<null>> => {
+    try {
+      if (viewType === "chat") {
+        const result = await chatService.deleteConversation(conversationId);
+        if (result.isSuccess) {
+          setConversations((prev) => prev.filter((conv) => conv.id !== conversationId));
+          return Result.ok(null);
+        } else {
+          return Result.fail(result.error);
+        }
+      } else if (viewType === "comparison") {
+        const result = await comparisonService.deleteConversation(conversationId);
+        if (result.isSuccess) {
+          setConversations((prev) => prev.filter((conv) => conv.id !== conversationId));
+          return Result.ok(null);
+        } else {
+          return Result.fail(result.error);
+        }
+      }
+      return Result.fail({
+        type: "DatabaseError" as const,
+        message: "Invalid view type",
+      });
+    } catch (err) {
+      return Result.fail({
+        type: "DatabaseError" as const,
+        message: `Failed to delete ${viewType} conversation`,
+        details: err,
+      });
+    }
+  };
+
   return {
     conversations,
     isLoading,
     error,
     refetch,
+    deleteConversation,
   };
 }

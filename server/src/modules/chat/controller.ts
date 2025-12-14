@@ -13,7 +13,7 @@ import {
 } from "@server/utils/index.js";
 import { createChatJobPayload, executeChatStream } from "./service.js";
 import { sendModelError } from "@server/lib/stream/helpers.js";
-import { getUserConversations, getConversationMessages } from "./repository.js";
+import { getUserConversations, getConversationMessages, deleteChatConversation } from "./repository.js";
 
 const ChatJobSchema = ChatStreamSchema.extend({
   conversationId: z.string(),
@@ -129,6 +129,32 @@ export async function getMessages(req: AuthRequest, res: Response) {
     }
 
     res.status(200).json(result.value);
+  } catch (error) {
+    sendInternalError(res, String(error));
+  }
+}
+
+export async function deleteConversation(req: AuthRequest, res: Response) {
+  try {
+    const auth = validateAuth(req);
+    if (!auth.isValid) {
+      return sendUnauthorized(res);
+    }
+
+    const conversationId = req.params.conversationId;
+    if (!conversationId) {
+      return sendBadRequest(res, "Missing conversationId");
+    }
+
+    const result = await deleteChatConversation(conversationId, auth.userId);
+    if (!result.isSuccess) {
+      if (result.error.type === "NotFound") {
+        return sendNotFound(res, result.error.message);
+      }
+      return sendInternalError(res, result.error.message);
+    }
+
+    res.status(200).json({ success: true, message: "Conversation deleted successfully" });
   } catch (error) {
     sendInternalError(res, String(error));
   }

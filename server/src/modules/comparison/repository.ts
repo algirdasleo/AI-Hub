@@ -195,3 +195,36 @@ export async function getComparisonConversationPrompts(conversationId: string, u
     });
   }
 }
+
+export async function deleteComparisonConversation(conversationId: string, userId: string) {
+  try {
+    const { data: conversation, error: convError } = await supabaseServer
+      .from(Tables.COMPARISON_CONVERSATIONS)
+      .select("id")
+      .eq("id", conversationId)
+      .eq("user_id", userId)
+      .single();
+
+    if (convError || !conversation) {
+      return Result.fail({
+        type: ErrorType.NotFound,
+        message: "Conversation not found or access denied",
+      });
+    }
+
+    const { error: deleteError } = await supabaseServer
+      .from(Tables.COMPARISON_CONVERSATIONS)
+      .delete()
+      .eq("id", conversationId);
+
+    if (deleteError) throw deleteError;
+
+    return Result.ok(null);
+  } catch (error) {
+    return Result.fail({
+      type: ErrorType.DatabaseError,
+      message: "Error deleting conversation",
+      details: error,
+    });
+  }
+}

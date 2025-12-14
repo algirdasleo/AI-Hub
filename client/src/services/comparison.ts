@@ -44,4 +44,10 @@ export const comparisonService = {
 
     return result;
   },
+
+  async deleteConversation(conversationId: string) {
+    return apiFetch<{ success: boolean; message: string }>(`/api/comparison/conversations/${conversationId}`, {
+      method: "DELETE",
+    });
+  },
 };

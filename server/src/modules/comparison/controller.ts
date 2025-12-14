@@ -22,7 +22,11 @@ import {
   getUidFromQuery,
 } from "@server/utils/index.js";
 import { createComparisonJobPayload, executeComparisonStream } from "./service.js";
-import { getUserComparisonConversations, getComparisonConversationPrompts } from "./repository.js";
+import {
+  getUserComparisonConversations,
+  getComparisonConversationPrompts,
+  deleteComparisonConversation,
+} from "./repository.js";
 
 const ComparisonJobSchema = ComparisonStreamSchema.extend({
   conversationId: z.string(),
@@ -145,6 +149,32 @@ export async function getComparisonMessages(req: AuthRequest, res: Response) {
 
     const response: GetComparisonPromptsResponseDTO = result.value;
     res.status(200).json(response);
+  } catch (error) {
+    sendInternalError(res, String(error));
+  }
+}
+
+export async function deleteComparison(req: AuthRequest, res: Response) {
+  try {
+    const auth = validateAuth(req);
+    if (!auth.isValid) {
+      return sendUnauthorized(res);
+    }
+
+    const conversationId = req.params.conversationId;
+    if (!conversationId) {
+      return sendBadRequest(res, "Missing conversationId");
+    }
+
+    const result = await deleteComparisonConversation(conversationId, auth.userId);
+    if (!result.isSuccess) {
+      if (result.error.type === "NotFound") {
+        return sendNotFound(res, result.error.message);
+      }
+      return sendInternalError(res, result.error.message);
+    }
+
+    res.status(200).json({ success: true, message: "Conversation deleted successfully" });
   } catch (error) {
     sendInternalError(res, String(error));
   }

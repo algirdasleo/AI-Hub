@@ -6,6 +6,7 @@ import {
   streamComparisonByUid,
   getComparisonConversations,
   getComparisonMessages,
+  deleteComparison,
 } from "./controller.js";
 
 const router = Router();
@@ -14,5 +15,6 @@ router.post("/job", authMiddleware, validateBody(ComparisonStreamSchema), create
 router.get("/stream", authMiddleware, streamComparisonByUid);
 router.get("/conversations", authMiddleware, getComparisonConversations);
 router.get("/conversations/:conversationId/messages", authMiddleware, getComparisonMessages);
+router.delete("/conversations/:conversationId", authMiddleware, deleteComparison);
 
 export const comparisonRouter = router;
