@@ -4,7 +4,12 @@ import { MessageRole } from "@shared/types/chat/message";
 import { SSEHandler } from "@/lib/sse-handler";
 import type { ChatStreamParams, ChatJobResponse } from "@shared/types/chat";
 import type { Result } from "@shared/utils";
-import type { ModelStreamTextData, ModelStreamErrorData, ModelStreamUsageData } from "@shared/types/comparison";
+import type {
+  ModelStreamTextData,
+  ModelStreamErrorData,
+  ModelStreamUsageData,
+  ModelStreamLatencyData,
+} from "@shared/types/comparison";
 import { AIProvider } from "@shared/config/model-schemas";
 
 export interface Message {
@@ -108,7 +113,7 @@ export default function useStreamingPanel(service: StreamingService) {
             );
           }
         },
-        [EventType.LATENCY_MS]: (data: any) => {
+        [EventType.LATENCY_MS]: (data: ModelStreamLatencyData) => {
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantId
