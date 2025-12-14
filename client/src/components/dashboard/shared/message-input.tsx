@@ -14,6 +14,7 @@ interface MessageInputProps {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  uploadFileEnabled?: boolean;
 }
 
 export function MessageInput({
@@ -26,6 +27,7 @@ export function MessageInput({
   placeholder = "Ask, Search or Chat...",
   className,
   autoFocus = false,
+  uploadFileEnabled = false,
 }: MessageInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -60,9 +62,11 @@ export function MessageInput({
         onKeyDown={handleKeyDown}
       />
       <InputGroupAddon align="block-end">
-        <InputGroupButton variant="outline" className="rounded-full" size="icon-sm">
-          <Plus className="h-4 w-4" />
-        </InputGroupButton>
+        {uploadFileEnabled && (
+          <InputGroupButton variant="outline" className="rounded-full" size="icon-sm">
+            <Plus className="h-4 w-4" />
+          </InputGroupButton>
+        )}
         <InputGroupButton variant={useWebSearch ? "default" : "outline"} onClick={onWebSearchToggle} size="sm">
           <Globe className="h-6 w-6 mr-1" />
           Web search

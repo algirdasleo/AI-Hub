@@ -19,7 +19,7 @@ const features: FeatureCard[] = [
     icon: MessageCircle,
     color: "text-blue-500",
     description: "Start conversations with AI",
-    items: ["Upload multiple document types", "Ask natural language questions", "Get contextual answers"],
+    items: ["Chat with multiple AI models", "Customize model settings", "Web search integration"],
   },
   {
     title: "Compare",
@@ -71,7 +71,7 @@ export default function OverviewPanel({ onNavigate }: OverviewPanelProps) {
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 {feature.title === "Chat"
-                  ? "Upload your documents and have intelligent conversations with AI about their content. Ask questions, get summaries, and extract key information."
+                  ? "Have intelligent conversations with multiple AI models. Switch between providers, adjust settings, and use web search to enhance your queries."
                   : feature.title === "Compare"
                     ? "Compare responses from different AI models side by side. See how various models handle the same questions about your documents."
                     : "Create and manage projects to keep your documents and conversations organized. Structure your work by topic or use case."}
