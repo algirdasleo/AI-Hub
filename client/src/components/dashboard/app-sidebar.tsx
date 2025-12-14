@@ -85,7 +85,7 @@ export function AppSidebar({
         <TeamSwitcher teams={data.teams} />
         <NavMain items={data.navMain} />
       </SidebarHeader>
-      {(currentView === "chat" || currentView === "comparison") ? (
+      {currentView === "chat" || currentView === "comparison" ? (
         <SidebarContent>
           <NavConversations
             currentView={currentView}
