@@ -86,6 +86,8 @@ export async function executeComparisonStream(
 
     const settledResults = await streamMultipleModels(res, models, params.systemPrompt, params.useWebSearch);
 
+    sendStreamComplete(res);
+
     await saveComparisonResults(
       settledResults,
       parsedModels,
@@ -95,9 +97,6 @@ export async function executeComparisonStream(
     ).catch((err: unknown) => {
       console.warn("Failed to save comparison results:", err);
     });
-
-    sendStreamComplete(res);
-
     return Result.okVoid();
   } catch (error) {
     return Result.fail({ type: ErrorType.InternalServerError, message: String(error) });

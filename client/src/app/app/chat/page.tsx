@@ -6,14 +6,14 @@ import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { ModelSelector, ModelSettingsPopover, type ModelSettings } from "@/components/dashboard/shared";
 
 export default function ChatPage() {
-  const [selectedModelId, setSelectedModelId] = useState("claude-3-7-sonnet-latest");
+  const [selectedModelId, setSelectedModelId] = useState("claude-sonnet-4-5");
   const [modelSettings, setModelSettings] = useState<ModelSettings>({
     temperature: 0.7,
     maxOutputTokens: undefined,
   });
 
   return (
-    <DashboardLayout 
+    <DashboardLayout
       title="Chat"
       extraHeaderContent={
         <div className="flex items-center gap-2">
