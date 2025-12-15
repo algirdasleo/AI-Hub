@@ -28,11 +28,16 @@ export async function createProjectConversation(projectId: string, userId: strin
   }
 }
 
-export async function addProjectMessage(conversationId: string, role: MessageRole, content: string) {
+export async function addProjectMessage(
+  conversationId: string,
+  role: MessageRole,
+  content: string,
+  model?: string,
+) {
   try {
     const { data, error } = await supabaseServer
       .from(Tables.PROJECT_MESSAGES)
-      .insert([{ conversation_id: conversationId, role, content }])
+      .insert([{ conversation_id: conversationId, role, content, model }])
       .select("id");
 
     if (error) throw error;
@@ -151,6 +156,7 @@ export async function getProjectConversationMessages(conversationId: string, pro
         id,
         role,
         content,
+        model,
         created_at,
         stats:project_message_stats(
           id,

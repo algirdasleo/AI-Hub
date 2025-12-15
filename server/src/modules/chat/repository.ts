@@ -29,11 +29,11 @@ export async function createChatConversation(userId: string, title?: string) {
   }
 }
 
-export async function addMessage(conversationId: string, role: MessageRole, content: string) {
+export async function addMessage(conversationId: string, role: MessageRole, content: string, model?: string) {
   try {
     const { data, error } = await supabaseServer
       .from(Tables.CHAT_MESSAGES)
-      .insert([{ conversation_id: conversationId, role, content }])
+      .insert([{ conversation_id: conversationId, role, content, model }])
       .select("id");
 
     if (error) throw error;
@@ -188,6 +188,7 @@ export async function getConversationMessages(conversationId: string, userId: st
         id,
         role,
         content,
+        model,
         created_at,
         stats:chat_message_stats(
           id,

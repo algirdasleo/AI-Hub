@@ -24,6 +24,7 @@ export interface Message {
   };
   latencyMs?: number | null;
   modelId?: string;
+  model?: string;
 }
 
 interface StreamingService {
@@ -51,7 +52,7 @@ export default function useStreamingPanel(service: StreamingService, initialConv
 
   const sendMessage = async (
     content: string,
-    meta: { provider: AIProvider; modelId: string; settings: object; useWebSearch: boolean },
+    meta: { provider: AIProvider; modelId: string; modelName?: string; settings: object; useWebSearch: boolean },
   ) => {
     if (!content.trim() || isLoading) return;
     if (activeStreamRef.current) {
@@ -66,7 +67,7 @@ export default function useStreamingPanel(service: StreamingService, initialConv
     const assistantId = crypto.randomUUID();
     setMessages((prev) => [
       ...prev,
-      { id: assistantId, role: MessageRole.ASSISTANT, content: "", isStreaming: true },
+      { id: assistantId, role: MessageRole.ASSISTANT, content: "", isStreaming: true, model: meta.modelName },
     ]);
 
     try {

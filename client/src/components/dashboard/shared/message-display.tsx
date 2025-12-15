@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeKatex from "rehype-katex";
 import { markdownComponents } from "@/lib/markdown-components";
+import { MODELS } from "@shared/config/models";
 import "katex/dist/katex.min.css";
 
 export interface Message {
@@ -82,7 +83,11 @@ export function MessageDisplay({
                   className={`space-y-1 ${message.role === MessageRole.USER ? "text-right" : "text-left"}`}
                 >
                   <div className="text-xs text-muted-foreground">
-                    {message.role === MessageRole.USER ? "You" : modelName || "AI"}
+                    {message.role === MessageRole.USER
+                      ? "You"
+                      : message.model
+                        ? MODELS[message.model]?.name || message.model
+                        : modelName || "AI"}
                   </div>
                   {message.content ? (
                     message.role === MessageRole.USER ? (
@@ -120,7 +125,6 @@ export function MessageDisplay({
                               </div>
                             ) : (
                               <>
-                                {message.model && <div>{message.model}</div>}
                                 <div className="space-x-2">
                                   {message.stats && message.stats.tokens_used > 0 && (
                                     <span>{message.stats.tokens_used} tokens</span>

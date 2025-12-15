@@ -73,6 +73,7 @@ export default function ChatPanel({
     sendMessage(prompt, {
       provider: selectedModel.provider,
       modelId: selectedModel.id,
+      modelName: selectedModel.name,
       settings: modelSettings,
       useWebSearch,
     });

@@ -23,6 +23,7 @@ interface DatabaseMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  model?: string;
   created_at: string;
 }
 
@@ -64,6 +65,7 @@ export function useConversationMessages(conversationId: string | null, viewType:
               id: msg.id,
               role: msg.role === "user" ? "user" : "assistant",
               content,
+              model: "model" in msg ? msg.model : undefined,
             };
 
             // Handle both single object and array of stats from Supabase

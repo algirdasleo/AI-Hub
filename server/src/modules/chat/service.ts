@@ -55,11 +55,12 @@ async function addAssistantMessage(
   convId: string,
   projectId: string | undefined,
   content: string,
+  model?: string,
 ): Promise<Result<any>> {
   if (projectId) {
-    return await addProjectMessage(convId, MessageRole.ASSISTANT, content);
+    return await addProjectMessage(convId, MessageRole.ASSISTANT, content, model);
   }
-  return await addMessage(convId, MessageRole.ASSISTANT, content);
+  return await addMessage(convId, MessageRole.ASSISTANT, content, model);
 }
 
 export async function createChatJobPayload(
@@ -172,7 +173,12 @@ export async function executeChatStream(
     sendStreamComplete(res);
 
     if (content) {
-      const assistantMsgResult = await addAssistantMessage(params.conversationId, params.projectId, content);
+      const assistantMsgResult = await addAssistantMessage(
+        params.conversationId,
+        params.projectId,
+        content,
+        selectedModel.modelId,
+      );
 
       if (!assistantMsgResult.isSuccess) {
         return Result.fail({ type: ErrorType.DatabaseError, message: "Failed to save assistant message" });
