@@ -1,17 +1,10 @@
 "use client";
 
 import * as React from "react";
-import {
-  Command,
-  Compass,
-  Folder,
-  GitCompare,
-  MessageCircle,
-  MessageCircleQuestion,
-  Settings2,
-} from "lucide-react";
+import { Command, Compass, Folder, GitCompare, MessageCircle } from "lucide-react";
 
 import { NavConversations } from "@/components/dashboard/nav-conversations";
+import { NavProjects } from "@/components/dashboard/nav-projects";
 import { NavMain } from "@/components/dashboard/nav-main";
 import { NavSecondary } from "@/components/dashboard/nav-secondary";
 import { TeamSwitcher } from "@/components/dashboard/team-switcher";
@@ -46,25 +39,8 @@ const data = {
       url: "projects",
       icon: Folder,
     },
-    // {
-    //   title: "Tracking",
-    //   url: "tracking",
-    //   icon: ClipboardList,
-    //   badge: "10",
-    // },
   ],
-  navSecondary: [
-    //   {
-    //     title: "Settings",
-    //     url: "#",
-    //     icon: Settings2,
-    //   },
-    //   {
-    //     title: "Docs",
-    //     url: "#",
-    //     icon: MessageCircleQuestion,
-    //   },
-  ],
+  navSecondary: [],
 };
 
 export function AppSidebar({
@@ -72,12 +48,18 @@ export function AppSidebar({
   selectedConversationId,
   onConversationSelect,
   onNewConversation,
+  selectedProjectId,
+  onProjectSelect,
+  onProjectConversationSelect,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   currentView?: string;
   selectedConversationId?: string;
   onConversationSelect?: (conversationId: string) => void;
   onNewConversation?: () => void;
+  selectedProjectId?: string;
+  onProjectSelect?: (projectId: string) => void;
+  onProjectConversationSelect?: (projectId: string, conversationId: string) => void;
 }) {
   return (
     <Sidebar className="border-r-0" {...props}>
@@ -85,21 +67,24 @@ export function AppSidebar({
         <TeamSwitcher teams={data.teams} />
         <NavMain items={data.navMain} />
       </SidebarHeader>
-      {currentView === "chat" || currentView === "comparison" ? (
-        <SidebarContent>
+      <SidebarContent>
+        {currentView === "chat" || currentView === "comparison" ? (
           <NavConversations
             currentView={currentView}
             selectedConversationId={selectedConversationId}
             onConversationSelect={onConversationSelect}
             onNewConversation={onNewConversation}
           />
-          <NavSecondary items={data.navSecondary} className="mt-auto" />
-        </SidebarContent>
-      ) : (
-        <SidebarContent>
-          <NavSecondary items={data.navSecondary} className="mt-auto" />
-        </SidebarContent>
-      )}
+        ) : currentView === "projects" ? (
+          <NavProjects
+            selectedProjectId={selectedProjectId}
+            selectedConversationId={selectedConversationId}
+            onProjectSelect={onProjectSelect}
+            onConversationSelect={onProjectConversationSelect}
+          />
+        ) : null}
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
+      </SidebarContent>
       <SidebarRail />
     </Sidebar>
   );
