@@ -7,7 +7,6 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   target: "node20",
-  // Leave node_modules dependencies external; only bundle our source
   skipNodeModulesBundle: true,
   shims: true,
 });
