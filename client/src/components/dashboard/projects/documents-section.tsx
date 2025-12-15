@@ -100,7 +100,7 @@ export function DocumentsSection({ project, onAddDocuments, onDeleteDocument }: 
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <IconComponent className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                    <IconComponent className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{doc.name}</p>
                       <p className="text-sm text-muted-foreground">

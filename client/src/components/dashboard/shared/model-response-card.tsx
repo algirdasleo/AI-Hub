@@ -44,7 +44,7 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 flex-shrink-0">
+      <CardHeader className="pb-3 shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{model.modelName}</CardTitle>
           <Badge variant="outline" className="text-xs">
@@ -55,7 +55,7 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
       <CardContent className="pt-0 flex-1 overflow-hidden">
         {model.error ? (
           <div className="flex items-center gap-2 p-4 text-destructive bg-destructive/10 rounded-lg">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <span className="text-sm">{model.error}</span>
           </div>
         ) : model.isLoading ? (
@@ -71,7 +71,7 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between pt-2 flex-shrink-0">
+            <div className="flex items-center justify-between pt-2 shrink-0">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-3 w-3 animate-spin" />
                 <span className="text-xs">{model.content ? "Generating..." : "Starting generation..."}</span>

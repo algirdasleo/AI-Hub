@@ -140,7 +140,7 @@ function ConversationItem({ conversation, isSelected, onClick }: ConversationIte
           <h3 className="font-medium text-sm truncate">{conversation.title}</h3>
           <p className="text-xs text-muted-foreground mt-1">{formatRelativeTime(conversation.createdAt)}</p>
         </div>
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           {conversation.type === "chat" ? (
             <MessageSquare className="h-3 w-3 text-muted-foreground" />
           ) : (
