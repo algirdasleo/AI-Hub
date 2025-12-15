@@ -9,4 +9,11 @@ export enum Tables {
   USAGE_PER_MODEL = "usage_per_model",
   USAGE_USER_MODEL = "usage_user_model",
   USAGE_CONVERSATION = "usage_conversation",
+  PROJECTS = "projects",
+  DOCUMENTS = "documents",
+  DOCUMENT_CHUNKS = "document_chunks",
+  USED_DOCUMENTS = "used_documents",
+  PROJECT_CONVERSATIONS = "project_conversations",
+  PROJECT_MESSAGES = "project_messages",
+  PROJECT_MESSAGE_STATS = "project_message_stats",
 }
