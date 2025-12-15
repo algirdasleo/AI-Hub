@@ -166,7 +166,6 @@ export function useComparisonPanel(initialConversationId?: string): ComparisonRe
           }
         })
         .on(EventType.ERROR, (data) => {
-          console.error("Comparison streaming error:", data);
           const { modelId, error } = data;
           const errorMsg = error || "Streaming error occurred";
           setCurrentModels((prev) =>
@@ -177,14 +176,12 @@ export function useComparisonPanel(initialConversationId?: string): ComparisonRe
           );
         })
         .onConnectionError((error) => {
-          console.error("Connection error:", error);
           setCurrentModels((prev) =>
             prev.map((model) => ({ ...model, isLoading: false, error: "Connection error occurred" })),
           );
           setIsStreaming(false);
         });
     } catch (error) {
-      console.error("Failed to start comparison:", error);
       setCurrentModels((prev) =>
         prev.map((model) => ({
           ...model,

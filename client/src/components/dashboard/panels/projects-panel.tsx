@@ -8,32 +8,56 @@ import { CreateProjectDialog } from "@/components/dashboard/projects/create-proj
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-const INITIAL_PROJECTS = [
-  {
-    id: "1",
-    name: "Q3 Financial Report",
-    description: "Analysis of quarterly financial statements",
-    createdAt: new Date().toISOString(),
-    documents: [],
-  },
-];
-
-export default function ProjectsPanel() {
+export default function ProjectsPanel({
+  selectedConversationId,
+  selectedProjectId,
+  onNewConversation,
+  onProjectSelect = () => {},
+}: {
+  selectedConversationId?: string;
+  selectedProjectId?: string;
+  onNewConversation?: () => void;
+  onProjectSelect?: (projectId: string) => void;
+} = {}) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const {
-    projects,
-    selectedProject,
-    selectedProjectId,
-    setSelectedProjectId,
-    createProject,
-    deleteProject,
-    addDocuments,
-    deleteDocument,
-  } = useProjects(INITIAL_PROJECTS);
+  const { projects, createProject, deleteProject, addDocuments, deleteDocument } = useProjects([]);
 
-  const handleCreateProject = (name: string, description: string) => {
-    createProject(name, description);
-    setIsCreateDialogOpen(false);
+  // Find the selected project from the projects list using selectedProjectId prop
+  const selectedProject = selectedProjectId ? projects.find((p) => p.id === selectedProjectId) : undefined;
+
+  const handleCreateProject = async (name: string, description: string) => {
+    try {
+      await createProject(name, description);
+      setIsCreateDialogOpen(false);
+    } catch (error) {
+      // Handle error silently or show user feedback
+    }
+  };
+
+  const handleAddDocuments = async (files: File[]) => {
+    if (!selectedProject) return;
+    try {
+      await addDocuments(selectedProject.id, files);
+    } catch (error) {
+      // Handle error silently or show user feedback
+    }
+  };
+
+  const handleDeleteDocument = async (documentId: string) => {
+    if (!selectedProject) return;
+    try {
+      await deleteDocument(selectedProject.id, documentId);
+    } catch (error) {
+      // Handle error silently or show user feedback
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      await deleteProject(projectId);
+    } catch (error) {
+      // Handle error silently or show user feedback
+    }
   };
 
   return (
@@ -41,9 +65,11 @@ export default function ProjectsPanel() {
       {selectedProject ? (
         <ProjectDetailsView
           project={selectedProject}
-          onBack={() => setSelectedProjectId(undefined)}
-          onAddDocuments={(docs) => addDocuments(selectedProject.id, docs)}
-          onDeleteDocument={(docId) => deleteDocument(selectedProject.id, docId)}
+          selectedConversationId={selectedConversationId}
+          onBack={() => onProjectSelect("")}
+          onAddDocuments={handleAddDocuments}
+          onDeleteDocument={handleDeleteDocument}
+          onNewChat={() => {}}
         />
       ) : (
         <>
@@ -62,8 +88,8 @@ export default function ProjectsPanel() {
 
           <ProjectsList
             projects={projects}
-            onSelectProject={setSelectedProjectId}
-            onDeleteProject={deleteProject}
+            onSelectProject={onProjectSelect}
+            onDeleteProject={handleDeleteProject}
           />
         </>
       )}

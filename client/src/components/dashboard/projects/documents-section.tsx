@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Project, Document } from "@shared/types/projects";
+import { Project } from "@shared/types/projects";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, File, Trash2, FileText, FileJson, FileCode } from "lucide-react";
@@ -16,8 +16,8 @@ import { formatTimeAgo } from "@/lib/time-utils";
 
 interface DocumentsSectionProps {
   project: Project;
-  onAddDocuments: (documents: Document[]) => void;
-  onDeleteDocument: (documentId: string) => void;
+  onAddDocuments: (files: File[]) => Promise<void>;
+  onDeleteDocument: (documentId: string) => Promise<void>;
 }
 
 function getFileIcon(type: string) {
@@ -40,27 +40,19 @@ export function DocumentsSection({ project, onAddDocuments, onDeleteDocument }: 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
     setIsUploading(true);
-    setTimeout(() => {
-      const newDocuments: Document[] = Array.from(files).map((file) => ({
-        id: Date.now().toString() + Math.random(),
-        name: file.name,
-        size: file.size,
-        uploadedAt: new Date().toISOString(),
-        type: file.type,
-      }));
-
-      onAddDocuments(newDocuments);
+    try {
+      await onAddDocuments(Array.from(files));
+    } finally {
       setIsUploading(false);
-
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    }, 500);
+    }
   };
 
   const handleUploadClick = () => {
@@ -81,7 +73,7 @@ export function DocumentsSection({ project, onAddDocuments, onDeleteDocument }: 
             multiple
             onChange={handleFileSelect}
             className="hidden"
-            accept=".pdf,.txt,.md,.json,.csv,.doc,.docx,.xlsx,.ppt,.pptx"
+            accept=".pdf,.txt,.docx"
           />
           <Button onClick={handleUploadClick} variant="outline" className="w-full gap-2" disabled={isUploading}>
             <Upload className="h-4 w-4" />
