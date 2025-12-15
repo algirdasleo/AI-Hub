@@ -1,64 +1,298 @@
 # AI Hub
 
-AI Hub is a platform that allows users to interact with multiple AI models, compare their performance, manage projects, and track usage in a centralized interface.
+AI Hub is a comprehensive full-stack monorepo application built with TypeScript that enables users to interact with multiple AI models through a centralized, user-friendly interface. The platform integrates with leading AI providers (OpenAI, Anthropic, Google) to provide chat functionality, model comparison capabilities, project management, and usage tracking.
 
-## Main Pages
+## 🌟 Features
 
 ### 1. Chat
 
-- Ask questions and receive answers from multiple AI models, such as: ChatGPT, Claude, and others.
+- Interact with multiple AI models in a conversational interface
+- Switch between different AI providers seamlessly
+- Ask questions and receive responses from models such as ChatGPT, Claude, Gemini, and others
 
 ### 2. Comparison
 
-- Select multiple different models, run the same prompt and compare their responses.
-- Compare tone, speed, and output accuracy and pick the best result.
+- Run identical prompts across multiple AI models simultaneously
+- Compare responses side-by-side
+- Evaluate differences in tone, speed, and output quality to choose the best result
 
-### 3. Projects - upcoming
+### 3. Projects
 
-- Create and manage AI projects.
-- Store and organize content such as documents, images, or other context for AI generation.
-- Generate outputs based on project-specific data.
+- Create and manage AI-powered projects
+- Organize project-specific data and context
+- Generate outputs tailored to individual project requirements
+- Support for document upload (PDF, DOCX) and content integration
 
-### 4. Tracking - upcoming
+### 4. Usage Tracking
 
-- Monitor AI usage, token consumption, and spending.
-- Dive into detailed metrics per page, per project, and per AI model.
+- Monitor API usage and token consumption across different models
+- Track project-specific metrics
+- View historical data and analytics
 
-### 5. Static Content / Guides - upcoming
+## 🏗️ Tech Stack
 
-- Access tutorials, guides, and documentation to help users navigate and make the most of AI Hub.
+### Frontend
 
----
+- **Next.js 16** - React framework with server-side rendering
+- **React 19** - Modern UI library
+- **Tailwind CSS** - Utility-first CSS framework
+- **Radix UI** - Unstyled, accessible component library
+- **Playwright** - End-to-end testing
 
-# Tech stack
+### Backend
 
-| Layer          | Tech                | Chosen, because                                                                |
-| -------------- | ------------------- | ------------------------------------------------------------------------------ |
-| Language       | TypeScript          | Strong typing across frontend, backend, and shared code                        |
-| Backend        | Express REST        | Full control over multi-LLM orchestration, RAG, token/cost tracking            |
-| Database       | Supabase PostgreSQL | Stores users, projects, usage, and metadata; managed DB simplifies maintenance |
-| Auth           | Supabase Auth       | Easy OAuth/JWT login, integrates with PostgreSQL                               |
-| File Storage   | Supabase Storage    | Stores PDFs, images, and project files                                         |
-| Vector DB      | Pinecone            | Efficient storage & retrieval for embeddings                                   |
-| Frontend       | React + Next.js     | Pages for chat, comparison, projects, and tracking                             |
-| Static Content | Payload CMS         | Guides, tutorials, and marketing content separated from app logic              |
-| Monorepo       | Turborepo           | Organizes frontend, backend, shared code, and types                            |
-| Validation     | Zod                 | Ensures schema validation + type safety                                        |
-| Code Quality   | ESLint + Prettier   | Maintains consistent style                                                     |
-| Testing        | Vitest              | Unit & integration tests                                                       |
+- **Express.js** - Node.js web framework
+- **TypeScript** - Type-safe JavaScript
+- **Supabase** - PostgreSQL database and authentication
+- **Vercel AI SDK** - Unified AI model integration
 
-# Installation
+### Tools & Infrastructure
 
-1. Run `npm install` to install dependencies.
+- **Turbo** - Monorepo build system
+- **Docker & Docker Compose** - Container orchestration
+- **Vitest** - Unit testing framework
+- **ESLint & Prettier** - Code quality and formatting
 
-2. Create .env files in both `backend` and `frontend` folders based on the provided `.env.example` files.
+## 📋 Installation
 
-3. To setup Supabase database, create a free account at [supabase.com](https://supabase.com) and create a new project. Then copy the supabase database URL and secret key to '.env' file. In order for the auth providers to work, connect them by navigating to Dashboard -> Authentication -> Sign In/Providers.
+### Prerequisites
 
-4. To setup Supabase CLI access, run:
-   - Install Supabase CLI by following instructions [here](https://supabase.com/docs/guides/local-development/cli/getting-started?queryGroups=platform&platform=macos#installing-the-supabase-cli)
-   - `supabase login` in the terminal and follow the instructions to login via browser.
-   - After logging in, run `supabase link` to link your local project to the one you created in Supabase.
-   - Finally, run `supabase db push` to create the necessary tables in your database.
+- Node.js 18+ and npm
+- Git
+- Docker and Docker Compose (for running the full stack locally)
+- Supabase account (free tier available at [supabase.com](https://supabase.com))
 
-5. Launch the project in development mode by running `npm run dev` in the root folder.
+### Step 1: Clone and Install Dependencies
+
+```bash
+git clone <repository-url>
+cd AI-Hub
+npm install
+```
+
+This installs dependencies for the entire monorepo, including the client (Next.js), server (Express), and shared packages.
+
+### Step 2: Set Up Environment Variables
+
+Create `.env.local` files for the client and server with the necessary configuration:
+
+- **Client** (`client/.env.local`):
+  - API endpoints for backend communication
+  - Authentication configuration
+  - Refer to `client/.env.example` for required variables
+
+- **Server** (`server/.env.local`):
+  - Database credentials
+  - API keys for AI model providers (OpenAI, Anthropic, etc.)
+  - Supabase configuration
+  - JWT secret for authentication
+  - Refer to `server/.env.example` for required variables
+
+### Step 3: Set Up Supabase
+
+1. Create a free account at [supabase.com](https://supabase.com) and create a new project
+2. Copy your Supabase project URL and anon/service role keys to your `.env.local` file
+3. Configure authentication providers:
+   - Navigate to **Dashboard → Authentication → Sign In/Providers**
+   - Enable OAuth providers (Google, GitHub, etc.) as needed
+   - Add provider credentials to complete the setup
+
+### Step 4: Set Up Local Database
+
+Install and configure the Supabase CLI:
+
+```bash
+# Install Supabase CLI (follow instructions for your OS)
+# macOS: brew install supabase/tap/supabase
+
+# Login to your Supabase account
+supabase login
+
+# Link your local project to your Supabase project
+supabase link --project-ref <your-project-ref>
+
+# Push database migrations to set up tables and schema
+supabase db push
+```
+
+### Step 5: Configure AI Model Keys
+
+Add API keys for the AI models you want to support:
+
+- OpenAI (ChatGPT)
+- Anthropic (Claude)
+- Other providers as needed
+
+Store these securely in your `.env.local` file in the server directory.
+
+### Step 6: Start Development Server
+
+From the root directory, run:
+
+```bash
+npm run dev
+```
+
+This starts both the client (Next.js on `http://localhost:3000`) and server (Express on `http://localhost:3001`) in development mode using Turbo.
+
+### Running with Docker
+
+To run the entire stack with Docker Compose:
+
+```bash
+docker-compose up
+```
+
+This will start the client, server, and database services defined in `docker-compose.yml`.
+
+## 📁 Project Structure
+
+```
+AI-Hub/
+├── client/                  # Next.js frontend application
+│   ├── src/
+│   │   ├── app/            # Next.js app directory
+│   │   ├── components/     # React components (auth, dashboard, layout, ui)
+│   │   ├── context/        # React context (AuthContext)
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── lib/            # Utility functions and helpers
+│   │   └── services/       # API service layer
+│   └── e2e/                # Playwright end-to-end tests
+├── server/                  # Express.js backend application
+│   ├── src/
+│   │   ├── app.ts          # Express app setup
+│   │   ├── db/             # Database configuration (Supabase)
+│   │   ├── middleware/     # Express middleware
+│   │   ├── modules/        # Feature modules (auth, chat, etc.)
+│   │   ├── lib/            # AI SDK integration and utilities
+│   │   └── utils/          # Helper functions
+│   └── tests/              # Unit tests
+├── shared/                  # Shared types and utilities
+│   ├── config/             # Configuration and model schemas
+│   ├── types/              # TypeScript type definitions
+│   └── utils/              # Shared utility functions
+├── docker-compose.yml      # Docker services configuration
+└── turbo.json              # Turbo configuration
+```
+
+## 🚀 Available Scripts
+
+### Root Level Commands
+
+```bash
+npm run dev       # Start development servers for client and server
+npm run build     # Build all packages
+npm run lint      # Run ESLint across the monorepo
+npm run test      # Run tests across all packages
+npm run format    # Format code with Prettier
+```
+
+### Client Commands
+
+```bash
+cd client
+npm run dev                # Start Next.js dev server
+npm run build              # Build Next.js application
+npm run start              # Start production server
+npm run test               # Run Playwright e2e tests
+npm run test:headed        # Run tests with browser visible
+npm run test:ui            # Run tests with Playwright UI
+```
+
+### Server Commands
+
+```bash
+cd server
+npm run dev       # Start Express server in watch mode
+npm run build     # Build TypeScript to JavaScript
+npm run start     # Start production server
+npm run test      # Run unit tests with Vitest
+```
+
+## 🔐 Environment Configuration
+
+### Client Environment Variables
+
+Create `client/.env.local`:
+
+```env
+NEXT_PUBLIC_SERVER_URL=http://localhost:3001
+```
+
+### Server Environment Variables
+
+Create `server/.env.local`:
+
+```env
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# JWT Configuration
+JWT_SECRET=your-jwt-secret
+
+# AI Provider API Keys
+OPENAI_API_KEY=your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
+GOOGLE_API_KEY=your-google-key
+
+# Server Configuration
+PORT=3001
+NODE_ENV=development
+```
+
+## 🧪 Testing
+
+### End-to-End Tests (Client)
+
+```bash
+cd client
+npm run test              # Run all e2e tests
+npm run test:headed       # Run with visible browser
+npm run test:ui           # Interactive test runner
+```
+
+### Unit Tests (Server)
+
+```bash
+cd server
+npm run test              # Run all unit tests
+```
+
+## 🐳 Docker Deployment
+
+Build and run the entire application in Docker:
+
+```bash
+docker-compose up --build
+```
+
+The application will be available at:
+
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:3001`
+
+## 📚 API Documentation
+
+The backend provides REST API endpoints for:
+
+- **Authentication** - User sign-in/sign-up via OAuth
+- **Chat** - Send messages and receive AI responses
+- **Comparison** - Compare outputs from multiple models
+- **Projects** - Create and manage projects
+- **Conversations** - Manage chat conversations
+
+For detailed API documentation, refer to the server module implementations in `server/src/modules/`.
+
+## 🔄 Database Migrations
+
+To manage database schema changes:
+
+```bash
+# Push pending migrations to Supabase
+supabase db push
+
+# View migration status
+supabase migration list
+```
