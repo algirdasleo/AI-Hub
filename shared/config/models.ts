@@ -2,14 +2,37 @@ import { AIModel } from "./model-schemas";
 import { AIProvider } from "./model-schemas";
 
 export const MODELS: Record<string, AIModel> = {
-  // OpenAI Models
+  "gpt-5.2": {
+    name: "GPT-5.2",
+    id: "gpt-5.2",
+    provider: AIProvider.OpenAI,
+    maxTokens: 16384,
+    contextWindow: 128000,
+    description: "OpenAI's latest flagship model for reasoning and agentic tasks.",
+  },
+  "gpt-5.2-pro": {
+    name: "GPT-5.2 Pro",
+    id: "gpt-5.2-pro",
+    provider: AIProvider.OpenAI,
+    maxTokens: 16384,
+    contextWindow: 128000,
+    description: "High-performance GPT-5.2 for toughest tasks.",
+  },
+  "gpt-5.2-chat-latest": {
+    name: "GPT-5.2 Chat",
+    id: "gpt-5.2-chat-latest",
+    provider: AIProvider.OpenAI,
+    maxTokens: 16384,
+    contextWindow: 128000,
+    description: "Chat-optimized GPT-5.2 model.",
+  },
   "gpt-5": {
     name: "GPT-5",
     id: "gpt-5",
     provider: AIProvider.OpenAI,
     maxTokens: 16384,
     contextWindow: 128000,
-    description: "OpenAI's most advanced multimodal model, fast and affordable.",
+    description: "Previous GPT-5 full model.",
   },
   "gpt-5-mini": {
     name: "GPT-5 Mini",
@@ -17,7 +40,7 @@ export const MODELS: Record<string, AIModel> = {
     provider: AIProvider.OpenAI,
     maxTokens: 8192,
     contextWindow: 65536,
-    description: "Affordable and intelligent small model for fast, lightweight tasks.",
+    description: "Smaller, cost-efficient GPT-5 variant.",
   },
   "gpt-5-nano": {
     name: "GPT-5 Nano",
@@ -25,90 +48,62 @@ export const MODELS: Record<string, AIModel> = {
     provider: AIProvider.OpenAI,
     maxTokens: 4096,
     contextWindow: 32768,
-    description: "Compact and fast model suitable for quick tasks.",
-  },
-  "gpt-5-codex": {
-    name: "GPT-5 Codex",
-    id: "gpt-5-codex",
-    provider: AIProvider.OpenAI,
-    maxTokens: 8192,
-    contextWindow: 65536,
-    description: "Specialized in code generation and programming tasks.",
-  },
-  "gpt-5-chat-latest": {
-    name: "GPT-5 Chat",
-    id: "gpt-5-chat-latest",
-    provider: AIProvider.OpenAI,
-    maxTokens: 8192,
-    contextWindow: 65536,
-    description: "Optimized for dialogue and chat-based applications.",
+    description: "Fastest, lightweight GPT-5 model.",
   },
 
-  // Anthropic Models
-  "claude-opus-4-1": {
-    name: "Claude Opus 4.1",
-    id: "claude-opus-4-1",
+  "claude-opus-4-5": {
+    name: "Claude Opus 4.5",
+    id: "claude-opus-4-5",
     provider: AIProvider.Anthropic,
     maxTokens: 8192,
     contextWindow: 200000,
-    description: "Most intelligent Claude model - excellent for complex tasks.",
+    description: "Most capable Anthropic model for complex reasoning and coding.",
   },
-  "claude-opus-4-0": {
-    name: "Claude Opus 4.0",
-    id: "claude-opus-4-0",
+  "claude-sonnet-4-5": {
+    name: "Claude Sonnet 4.5",
+    id: "claude-sonnet-4-5",
     provider: AIProvider.Anthropic,
     maxTokens: 8192,
     contextWindow: 200000,
-    description: "Powerful model for highly complex tasks.",
+    description: "Balanced Claude 4.5 model for general tasks.",
   },
-  "claude-sonnet-4-0": {
-    name: "Claude Sonnet 4.0",
-    id: "claude-sonnet-4-0",
+  "claude-haiku-4-5": {
+    name: "Claude Haiku 4.5",
+    id: "claude-haiku-4-5",
     provider: AIProvider.Anthropic,
-    maxTokens: 4096,
+    maxTokens: 8192,
     contextWindow: 200000,
-    description: "Balanced intelligence and speed.",
-  },
-  "claude-3-7-sonnet-latest": {
-    name: "Claude 3.7 Sonnet",
-    id: "claude-3-7-sonnet-latest",
-    provider: AIProvider.Anthropic,
-    maxTokens: 4096,
-    contextWindow: 200000,
-    description: "High intelligence with efficient reasoning capabilities.",
-  },
-  "claude-3-5-haiku-latest": {
-    name: "Claude 3.5 Haiku",
-    id: "claude-3-5-haiku-latest",
-    provider: AIProvider.Anthropic,
-    maxTokens: 4096,
-    contextWindow: 200000,
-    description: "Fastest and most compact model for near-instant responsiveness.",
+    description: "Fast and low-latency Claude 4.5 model.",
   },
 
-  // Google Generative AI / Vertex Models
-  "gemini-2.0-flash-exp": {
-    name: "Gemini 2.0 Flash Exp",
-    id: "gemini-2.0-flash-exp",
+  "gemini-3-pro-preview": {
+    name: "Gemini 3 Pro Preview",
+    id: "gemini-3-pro-preview",
     provider: AIProvider.Google,
-    maxTokens: 8192,
-    contextWindow: 1000000,
-    description: "Experimental Gemini 2.0 model with fast performance.",
+    maxTokens: 65536,
+    contextWindow: 1048576, // 1M tokens
+    description:
+      "Our latest reasoning-first model, optimized for complex agentic workflows, advanced reasoning, and state-of-the-art performance. (Preview)",
   },
-  "gemini-1.5-flash": {
-    name: "Gemini 1.5 Flash",
-    id: "gemini-1.5-flash",
-    provider: AIProvider.Google,
-    maxTokens: 8192,
-    contextWindow: 1000000,
-    description: "Fast and versatile performance across diverse tasks.",
-  },
-  "gemini-1.5-pro": {
-    name: "Gemini 1.5 Pro",
+
+  "gemini-2.5-pro": {
+    name: "Gemini 2.5 Pro",
     id: "gemini-2.5-pro",
     provider: AIProvider.Google,
-    maxTokens: 8192,
-    contextWindow: 2000000,
-    description: "Google's most capable model with 2M token context window.",
+    maxTokens: 65536,
+    contextWindow: 1048576,
+    description:
+      "Google's state-of-the-art stable model for complex reasoning, coding, long-context analysis, and sophisticated multimodal tasks.",
+  },
+
+  // 3. The best price-performance model (Production workhorse)
+  "gemini-2.5-flash": {
+    name: "Gemini 2.5 Flash",
+    id: "gemini-2.5-flash",
+    provider: AIProvider.Google,
+    maxTokens: 65536,
+    contextWindow: 1048576,
+    description:
+      "Lightning-fast and highly capable. The best balance of intelligence, latency, and cost for high-volume, versatile applications.",
   },
 };
