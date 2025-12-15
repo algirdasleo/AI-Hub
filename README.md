@@ -18,16 +18,9 @@ AI Hub is a comprehensive full-stack monorepo application built with TypeScript 
 
 ### 3. Projects
 
-- Create and manage AI-powered projects
-- Organize project-specific data and context
-- Generate outputs tailored to individual project requirements
-- Support for document upload (PDF, DOCX) and content integration
-
-### 4. Usage Tracking
-
-- Monitor API usage and token consumption across different models
-- Track project-specific metrics
-- View historical data and analytics
+- Create and manage projects with custom document collections
+- Upload documents to projects and chat with them using AI models
+- Each project maintains its own set of documents for isolated, context-specific conversations
 
 ## 🏗️ Tech Stack
 
@@ -36,7 +29,7 @@ AI Hub is a comprehensive full-stack monorepo application built with TypeScript 
 - **Next.js 16** - React framework with server-side rendering
 - **React 19** - Modern UI library
 - **Tailwind CSS** - Utility-first CSS framework
-- **Radix UI** - Unstyled, accessible component library
+- **Radix UI / Shadcn** - Component libraries
 - **Playwright** - End-to-end testing
 
 ### Backend
@@ -59,7 +52,7 @@ AI Hub is a comprehensive full-stack monorepo application built with TypeScript 
 
 - Node.js 18+ and npm
 - Git
-- Docker and Docker Compose (for running the full stack locally)
+- Docker (for running the full stack locally)
 - Supabase account (free tier available at [supabase.com](https://supabase.com))
 
 ### Step 1: Clone and Install Dependencies
@@ -103,7 +96,7 @@ Install and configure the Supabase CLI:
 
 ```bash
 # Install Supabase CLI (follow instructions for your OS)
-# macOS: brew install supabase/tap/supabase
+# Refer to https://supabase.com/docs/guides/cli
 
 # Login to your Supabase account
 supabase login
@@ -134,16 +127,6 @@ npm run dev
 ```
 
 This starts both the client (Next.js on `http://localhost:3000`) and server (Express on `http://localhost:3001`) in development mode using Turbo.
-
-### Running with Docker
-
-To run the entire stack with Docker Compose:
-
-```bash
-docker-compose up
-```
-
-This will start the client, server, and database services defined in `docker-compose.yml`.
 
 ## 📁 Project Structure
 
@@ -259,19 +242,6 @@ npm run test:ui           # Interactive test runner
 cd server
 npm run test              # Run all unit tests
 ```
-
-## 🐳 Docker Deployment
-
-Build and run the entire application in Docker:
-
-```bash
-docker-compose up --build
-```
-
-The application will be available at:
-
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:3001`
 
 ## 📚 API Documentation
 
