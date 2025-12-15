@@ -31,11 +31,15 @@ interface StreamingService {
   streamChat(uid: string): SSEHandler;
 }
 
-export default function useStreamingPanel(service: StreamingService) {
+export default function useStreamingPanel(service: StreamingService, initialConversationId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const conversationIdRef = useRef<string | undefined>(undefined);
+  const conversationIdRef = useRef<string | undefined>(initialConversationId);
   const activeStreamRef = useRef<SSEHandler | null>(null);
+
+  useEffect(() => {
+    conversationIdRef.current = initialConversationId;
+  }, [initialConversationId]);
 
   useEffect(() => {
     return () => {

@@ -31,14 +31,18 @@ export default function ChatPanel({
     isLoading: isStreaming,
     sendMessage,
     newChat,
-  } = useStreamingPanel(chatService);
+  } = useStreamingPanel(chatService, selectedConversationId);
   const {
     messages: conversationMessages,
     isLoading: isLoadingHistory,
     error: historyError,
   } = useConversationMessages(selectedConversationId || null, "chat");
 
-  const displayMessages = selectedConversationId ? conversationMessages : streamingMessages;
+  // When viewing a conversation, merge history with new streaming messages
+  // When starting a new chat, use only streaming messages
+  const displayMessages = selectedConversationId
+    ? [...conversationMessages, ...streamingMessages]
+    : streamingMessages;
   const isLoading = selectedConversationId ? isLoadingHistory : isStreaming;
 
   useEffect(() => {

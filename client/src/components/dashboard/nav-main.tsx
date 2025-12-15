@@ -18,7 +18,6 @@ export function NavMain({
 }) {
   const pathname = usePathname();
 
-  // Extract the last segment of the pathname to determine active state
   const currentView = pathname.split("/").filter(Boolean).pop() || "overview";
 
   return (

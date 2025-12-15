@@ -119,9 +119,8 @@ export function useConversationMessages(conversationId: string | null, viewType:
           setError(result.error.message || "Failed to load comparison messages");
         }
       }
-    } catch (err) {
+    } catch {
       setError(`Failed to load ${viewType} messages`);
-      console.error(`Error loading ${viewType} messages:`, err);
     } finally {
       setIsLoading(false);
     }

@@ -119,10 +119,7 @@ export function NavConversations({
                     onClick={async () => {
                       setDeletingId(conversation.id);
                       try {
-                        const result = await deleteConversation(conversation.id);
-                        if (!result.isSuccess) {
-                          console.error("Failed to delete conversation:", result.error.message);
-                        }
+                        await deleteConversation(conversation.id);
                       } finally {
                         setDeletingId(null);
                       }

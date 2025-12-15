@@ -53,6 +53,20 @@ export default function ComparisonPanel({
   }, [selectedConversationId, refetch]);
 
   useEffect(() => {
+    if (selectedConversationId && comparisonPrompts.length > 0) {
+      const uniqueModels = new Set<string>();
+      comparisonPrompts.forEach((prompt) => {
+        prompt.outputs.forEach((output) => {
+          if (output.model) {
+            uniqueModels.add(output.model);
+          }
+        });
+      });
+      setSelectedModelIds(Array.from(uniqueModels));
+    }
+  }, [selectedConversationId, comparisonPrompts]);
+
+  useEffect(() => {
     if (selectedConversationId === undefined) {
       setHasStarted(false);
       setCurrentPrompt("");
@@ -74,6 +88,7 @@ export default function ComparisonPanel({
     const comparisonParams: ComparisonStreamParams = {
       prompt: currentPrompt.trim(),
       useWebSearch,
+      conversationId: selectedConversationId || conversationId,
       models: selectedModelIds.map((modelId) => ({
         provider: MODELS[modelId].provider,
         modelId,
@@ -101,7 +116,6 @@ export default function ComparisonPanel({
 
   const canStart = currentPrompt.trim() && selectedModelIds.length >= 2 && !isStreaming;
 
-  // Determine which history to display
   const displayHistoryItems =
     selectedConversationId && historyLoaded ? conversationHistory : history.filter((h) => h.isComplete);
 
