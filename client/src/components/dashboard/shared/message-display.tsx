@@ -4,6 +4,12 @@ import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle } from "lucide-react";
 import { MessageRole } from "@shared/types/chat/message";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeSanitize from "rehype-sanitize";
+import rehypeKatex from "rehype-katex";
+import { markdownComponents } from "@/lib/markdown-components";
+import "katex/dist/katex.min.css";
 
 export interface Message {
   id: string;
@@ -84,9 +90,15 @@ export function MessageDisplay({
                         {message.content}
                       </div>
                     ) : (
-                      <div className="space-y-1">
-                        <div className="bg-muted px-3 py-2 rounded-lg inline-block max-w-[90%]">
-                          <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                      <div className="space-y-2 w-full">
+                        <div className="px-5 py-4 rounded-lg border border-border bg-card/50 hover:bg-card/70 transition-colors">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeKatex, rehypeSanitize]}
+                            components={markdownComponents}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
                         </div>
                         {(message.usage || message.stats) && (
                           <div className="text-xs text-muted-foreground space-y-0.5 px-3">

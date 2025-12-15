@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, Clock } from "lucide-react";
+import { PrettyMarkdown } from "@/components/pretty-markdown";
 import type { ComparisonModel } from "@/hooks/useComparisonPanel";
 
 interface ModelResponseCardProps {
@@ -59,9 +60,9 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
           </div>
         ) : model.isLoading ? (
           <div className="space-y-3 flex flex-col h-full">
-            <div className="text-sm whitespace-pre-wrap overflow-y-auto max-h-80 flex-1">
+            <div className="text-sm overflow-y-auto max-h-80 flex-1">
               {model.content ? (
-                model.content
+                <PrettyMarkdown content={model.content} />
               ) : (
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-full" />
@@ -88,7 +89,9 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
           </div>
         ) : model.content ? (
           <div className="space-y-2">
-            <div className="text-sm whitespace-pre-wrap overflow-y-auto max-h-80">{model.content}</div>
+            <div className="text-sm overflow-y-auto max-h-80">
+              <PrettyMarkdown content={model.content} />
+            </div>
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                 <div className="h-2 w-2 bg-green-500 rounded-full"></div>
