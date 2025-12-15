@@ -11,9 +11,7 @@ export default function SignupPage() {
   const { user } = useAuth();
 
   useEffect(() => {
-    console.log("[SignupPage] useEffect running, user:", user?.email);
     if (user) {
-      console.log("[SignupPage] User is logged in, redirecting to dashboard");
       router.push("/dashboard");
     }
   }, [user, router]);
