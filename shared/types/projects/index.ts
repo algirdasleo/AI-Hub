@@ -1,10 +1,32 @@
 import { z } from "zod";
 
+export const DocumentDTOSchema = z.strictObject({
+  id: z.string(),
+  name: z.string(),
+  size: z.number().min(0),
+  uploadedAt: z.string(),
+  status: z.string().optional(),
+  type: z.string().optional(),
+});
+
+export type DocumentDTO = z.infer<typeof DocumentDTOSchema>;
+
+export const ProjectDTOSchema = z.strictObject({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().default(""),
+  createdAt: z.string(),
+  updatedAt: z.string().optional(),
+  documents: z.array(DocumentDTOSchema).default([]),
+});
+
+export type ProjectDTO = z.infer<typeof ProjectDTOSchema>;
+
 export const DocumentSchema = z.strictObject({
   id: z.string(),
   name: z.string(),
   size: z.number().min(0),
-  uploadedAt: z.iso.datetime(),
+  uploadedAt: z.string(),
   type: z.string(),
 });
 
@@ -14,7 +36,7 @@ export const ProjectSchema = z.strictObject({
   id: z.string(),
   name: z.string().min(1, "Project name is required"),
   description: z.string().default(""),
-  createdAt: z.iso.datetime(),
+  createdAt: z.string(),
   documents: z.array(DocumentSchema).default([]),
 });
 
@@ -46,9 +68,8 @@ export const DocumentUploadRequestSchema = z.strictObject({
 
 export type DocumentUploadRequest = z.infer<typeof DocumentUploadRequestSchema>;
 
-export const ProjectListResponseSchema = z.strictObject({
-  success: z.boolean(),
-  projects: z.array(ProjectSchema),
-});
+export const ProjectListResponseDTOSchema = z.array(ProjectDTOSchema);
 
-export type ProjectListResponse = z.infer<typeof ProjectListResponseSchema>;
+export type ProjectListResponseDTO = z.infer<typeof ProjectListResponseDTOSchema>;
+
+export * from "./conversation.js";
