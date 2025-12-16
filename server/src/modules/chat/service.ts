@@ -74,14 +74,14 @@ export async function createChatJobPayload(
       const title = params.title || params.prompt.split("?")[0].split(" ").slice(0, 6).join(" ");
       const convResult = await createConversation(params.projectId, userId, title);
       if (!convResult.isSuccess) {
-        return Result.fail(convResult.error);
+        return Result.fail({ ...convResult.error, message: "Failed to create chat conversation" });
       }
       convId = convResult.value;
     }
 
     const msgResult = await addUserMessage(convId, params.projectId, params.prompt);
     if (!msgResult.isSuccess) {
-      return Result.fail(msgResult.error);
+      return Result.fail({ ...msgResult.error, message: "Failed to save user message" });
     }
 
     return Result.ok({ conversationId: convId });
