@@ -95,8 +95,7 @@ export function MessageDisplay({
                         {message.content}
                       </div>
                     ) : (
-                      <div className="space-y-2 w-full">
-                        <div className="px-5 py-4 rounded-lg border border-border bg-card/50 hover:bg-card/70 transition-colors">
+                      <div className="space-y-2 inline-block max-w-[90%]">
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeKatex, rehypeSanitize]}
@@ -104,9 +103,8 @@ export function MessageDisplay({
                           >
                             {message.content}
                           </ReactMarkdown>
-                        </div>
                         {(message.usage || message.stats) && (
-                          <div className="text-xs text-muted-foreground space-y-0.5 px-3">
+                          <div className="text-xs text-muted-foreground pt-1">
                             {message.usage ? (
                               <div className="flex items-center gap-3">
                                 <div
@@ -127,13 +125,22 @@ export function MessageDisplay({
                               <>
                                 <div className="space-x-2">
                                   {message.stats && message.stats.tokens_used > 0 && (
-                                    <span>{message.stats.tokens_used} tokens</span>
+                                    <span>
+                                      <span>🎯</span>
+                                      <span>{message.stats.tokens_used} tokens</span>
+                                    </span>
                                   )}
                                   {message.stats && message.stats.cost_usd > 0 && (
-                                    <span>${message.stats.cost_usd.toFixed(6)}</span>
+                                    <span>
+                                      <span>💰</span>
+                                      <span>${message.stats.cost_usd.toFixed(6)}</span>
+                                    </span>
                                   )}
                                   {message.stats && message.stats.latency_ms !== null && (
-                                    <span>{message.stats.latency_ms}ms</span>
+                                    <span>
+                                      <span>⏱️</span>
+                                      <span>{message.stats.latency_ms}ms</span>
+                                    </span>
                                   )}
                                 </div>
                               </>
@@ -143,7 +150,7 @@ export function MessageDisplay({
                       </div>
                     )
                   ) : (
-                    <p className="text-muted-foreground text-sm">...</p>
+                    <p className="text-muted-foreground text-sm text-gray-500">...</p>
                   )}
                 </div>
               ))

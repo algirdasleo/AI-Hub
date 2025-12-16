@@ -2,12 +2,12 @@ import React from "react";
 import { Components } from "react-markdown";
 
 export const markdownComponents: Components = {
-  h1: ({ children }) => <h1 className="text-2xl font-bold mt-6 mb-4">{children}</h1>,
-  h2: ({ children }) => <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>,
-  h3: ({ children }) => <h3 className="text-lg font-bold mt-4 mb-2">{children}</h3>,
-  h4: ({ children }) => <h4 className="text-base font-bold mt-3 mb-2">{children}</h4>,
-  h5: ({ children }) => <h5 className="text-base font-bold mt-3 mb-2">{children}</h5>,
-  h6: ({ children }) => <h6 className="text-sm font-bold mt-2 mb-2">{children}</h6>,
+  h1: ({ children }) => <h1 className="text-xl font-bold mt-2">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-lg font-bold mt-1">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-md font-bold">{children}</h3>,
+  h4: ({ children }) => <h4 className="text-sm font-bold">{children}</h4>,
+  h5: ({ children }) => <h5 className="text-sm font-bold">{children}</h5>,
+  h6: ({ children }) => <h6 className="text-xs font-bold">{children}</h6>,
   p: ({ children }) => <p className="mb-3 leading-relaxed">{children}</p>,
   a: ({ href, children }) => (
     <a
@@ -21,10 +21,8 @@ export const markdownComponents: Components = {
   ),
   ul: ({ children }) => <ul className="list-disc list-outside mb-4 pl-6 space-y-1">{children}</ul>,
   ol: ({ children }) => <ol className="list-decimal list-outside mb-4 pl-6 space-y-1">{children}</ol>,
-  li: ({ children }) => <li className="text-base">{children}</li>,
-  code: ({ children }) => (
-    <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-sm text-foreground">{children}</code>
-  ),
+  li: ({ children }) => <li className="text-sm">{children}</li>,
+  code: ({ children }) => <code className="bg-muted px-1.5 py-0.5 rounded text-xs">{children}</code>,
   pre: ({ children }) => (
     <pre className="bg-muted p-4 rounded-lg overflow-auto mb-4 border border-border">{children}</pre>
   ),
