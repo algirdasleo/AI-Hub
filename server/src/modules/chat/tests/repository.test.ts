@@ -26,13 +26,11 @@ describe("chat repository", () => {
     });
     let result = await createChatConversation("user-123", "Test");
     expect(result.value).toEqual({ id: "conv-123" });
-
     (supabaseServer.from as any).mockReturnValue({
       insert: vi.fn().mockReturnValue(mockChain(null, { message: "DB error" })),
     });
     result = await createChatConversation("user-123");
     expect(result.error.type).toBe(ErrorType.DatabaseError);
-
     (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
     result = await createChatConversation("user-123");
     expect(result.isSuccess).toBe(false);
@@ -44,13 +42,11 @@ describe("chat repository", () => {
     });
     let result = await addMessage("conv-123", MessageRole.USER, "Hello");
     expect(result.value).toEqual({ id: "msg-123" });
-
     (supabaseServer.from as any).mockReturnValue({
       insert: vi.fn().mockReturnValue(mockChain(null, { message: "DB error" })),
     });
     result = await addMessage("conv-123", MessageRole.USER, "Hello");
     expect(result.isSuccess).toBe(false);
-
     (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
     result = await addMessage("conv-123", MessageRole.USER, "Hello");
     expect(result.isSuccess).toBe(false);
@@ -63,13 +59,11 @@ describe("chat repository", () => {
     });
     let result = await insertChatMessageStats("msg-123", 100, 0.01, 500);
     expect(result.isSuccess).toBe(true);
-
     (supabaseServer.from as any).mockReturnValue({
       insert: vi.fn().mockReturnValue(mockChain(null, { message: "DB error" })),
     });
     result = await insertChatMessageStats("msg-123", 100, 0.01);
     expect(result.isSuccess).toBe(false);
-
     (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
     result = await insertChatMessageStats("msg-123", 100, 0.01);
     expect(result.isSuccess).toBe(false);
@@ -82,7 +76,6 @@ describe("chat repository", () => {
     });
     let result = await updateMessageContent("msg-123", "Updated");
     expect(result.isSuccess).toBe(true);
-
     (supabaseServer.from as any).mockReturnValue({
       update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: { message: "DB error" } }) }),
     });
@@ -94,7 +87,6 @@ describe("chat repository", () => {
     (supabaseServer.rpc as any).mockResolvedValue({ error: null });
     let result = await updateUsageAggregates("gpt-4", "user-1", "conv-1", 100, 0.01);
     expect(result.isSuccess).toBe(true);
-
     (supabaseServer.rpc as any).mockRejectedValue(new Error("RPC failed"));
     result = await updateUsageAggregates("gpt-4", "user-1", "conv-1", 100, 0.01);
     expect(result.isSuccess).toBe(false);

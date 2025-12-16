@@ -25,13 +25,11 @@ describe("Comparison Repository", () => {
     });
     let result = await insertComparisonPrompt("conv-123", "Test prompt");
     expect(result.value).toEqual({ id: "prompt-123" });
-
     (supabaseServer.from as any).mockReturnValue({
       insert: vi.fn().mockReturnValue(mockChain(null, { message: "DB error" })),
     });
     result = await insertComparisonPrompt("conv-123", "Test");
     expect(result.error.type).toBe(ErrorType.DatabaseError);
-
     (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
     result = await insertComparisonPrompt("conv-123", "Test");
     expect(result.isSuccess).toBe(false);
@@ -43,13 +41,11 @@ describe("Comparison Repository", () => {
     });
     let result = await createComparisonConversation("user-123");
     expect(result.isSuccess).toBe(true);
-
     (supabaseServer.from as any).mockReturnValue({
       insert: vi.fn().mockReturnValue(mockChain(null, { message: "DB error" })),
     });
     result = await createComparisonConversation("user-123");
     expect(result.isSuccess).toBe(false);
-
     (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
     result = await createComparisonConversation("user-123");
     expect(result.isSuccess).toBe(false);
@@ -61,13 +57,11 @@ describe("Comparison Repository", () => {
     });
     let result = await insertComparisonOutput("prompt-123", "gpt-4", "assistant", "Response");
     expect(result.isSuccess).toBe(true);
-
     (supabaseServer.from as any).mockReturnValue({
       insert: vi.fn().mockReturnValue(mockChain(null, { message: "DB error" })),
     });
     result = await insertComparisonOutput("prompt-123", "gpt-4", "assistant", "Response");
     expect(result.isSuccess).toBe(false);
-
     (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
     result = await insertComparisonOutput("prompt-123", "gpt-4", "assistant", "Response");
     expect(result.isSuccess).toBe(false);
@@ -79,13 +73,11 @@ describe("Comparison Repository", () => {
     });
     let result = await insertComparisonOutputStats("output-123", 100, 0.01, 500);
     expect(result.isSuccess).toBe(true);
-
     (supabaseServer.from as any).mockReturnValue({
       insert: vi.fn().mockReturnValue(mockChain(null, { message: "DB error" })),
     });
     result = await insertComparisonOutputStats("output-123", 100, 0.01);
     expect(result.isSuccess).toBe(false);
-
     (supabaseServer.from as any).mockReturnValue({ insert: vi.fn().mockReturnValue(mockChain([])) });
     result = await insertComparisonOutputStats("output-123", 100, 0.01);
     expect(result.isSuccess).toBe(false);
@@ -96,7 +88,6 @@ describe("Comparison Repository", () => {
     let result = await updateUsageAggregates("gpt-4", "user-1", "conv-1", 100, 0.01);
     expect(result.isSuccess).toBe(true);
     expect(supabaseServer.rpc).toHaveBeenCalledTimes(3);
-
     (supabaseServer.rpc as any).mockRejectedValue(new Error("RPC failed"));
     result = await updateUsageAggregates("gpt-4", "user-1", "conv-1", 100, 0.01);
     expect(result.isSuccess).toBe(false);

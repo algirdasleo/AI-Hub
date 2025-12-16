@@ -60,7 +60,6 @@ describe("authMiddleware", () => {
     const res = mockRes();
     const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "valid", "sb-refresh-token": "refresh" };
-
     (jwtVerify as any).mockResolvedValue({
       payload: { exp: Math.floor(Date.now() / 1000) + 3600 },
     });
@@ -90,7 +89,6 @@ describe("authMiddleware", () => {
         payload: { email: "test@example.com", sub: "1", aud: "authenticated", iat: 1000, exp: 4600 },
       });
     });
-
     (supabaseServer.auth.refreshSession as any).mockResolvedValue({
       data: {
         session: { access_token: "new", refresh_token: "new", user: { id: "1", email: "test@example.com" } },
@@ -111,7 +109,6 @@ describe("authMiddleware", () => {
     const res = mockRes();
     const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "expired", "sb-refresh-token": "invalid" };
-
     (jwtVerify as any).mockRejectedValue({
       code: "ERR_JWT_EXPIRED",
       claim: "exp",
@@ -132,7 +129,6 @@ describe("authMiddleware", () => {
     const res = mockRes();
     const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "invalid", "sb-refresh-token": "refresh" };
-
     (jwtVerify as any).mockRejectedValue(new Error("Invalid"));
 
     await authMiddleware(req as AuthRequest, res as Response, mockNext);
@@ -146,7 +142,6 @@ describe("authMiddleware", () => {
     const res = mockRes();
     const mockNext = vi.fn();
     req.cookies = { "sb-access-token": "expired", "sb-refresh-token": "refresh" };
-
     (jwtVerify as any).mockRejectedValue({ code: "ERR_JWT_EXPIRED" });
     (supabaseServer.auth.refreshSession as any).mockRejectedValue(new Error("Refresh failed"));
 

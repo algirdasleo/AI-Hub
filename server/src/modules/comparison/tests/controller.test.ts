@@ -87,11 +87,9 @@ describe("comparison controller", () => {
         res as any,
       );
       expect(res.json).toHaveBeenCalledWith({ uid: "job-uid", conversationId: "conv-123" });
-
       (validateAuth as any).mockReturnValue({ isValid: false });
       await createComparisonJob({ user: mockUser } as any, mockRes() as any);
       expect(sendUnauthorized).toHaveBeenCalled();
-
       (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
       (createComparisonJobPayload as any).mockResolvedValue(
         Result.fail({ type: "DatabaseError", message: "Failed" }),
@@ -143,16 +141,13 @@ describe("comparison controller", () => {
 
       await streamComparisonByUid({ user: mockUser } as any, mockRes() as any);
       expect(deleteJob).toHaveBeenCalledWith("uid");
-
       (getUidFromQuery as any).mockReturnValue(null);
       await streamComparisonByUid({ user: mockUser } as any, mockRes() as any);
       expect(sendBadRequest).toHaveBeenCalled();
-
       (getUidFromQuery as any).mockReturnValue("uid");
       (getJob as any).mockResolvedValue(undefined);
       await streamComparisonByUid({ user: mockUser } as any, mockRes() as any);
       expect(sendNotFound).toHaveBeenCalled();
-
       (getJob as any).mockResolvedValue({
         prompt: "Compare",
         models: [{ provider: "OpenAI", modelId: "gpt-4", settings: {} }],
@@ -161,7 +156,6 @@ describe("comparison controller", () => {
       });
       await streamComparisonByUid({} as any, mockRes() as any);
       expect(sendUnauthorized).toHaveBeenCalled();
-
       (executeComparisonStream as any).mockResolvedValue(
         Result.fail({ type: "InternalServerError", message: "Failed" }),
       );
@@ -193,7 +187,6 @@ describe("comparison controller", () => {
 
       await getComparisonConversations({ user: mockUser } as any, res as any);
       expect(res.json).toHaveBeenCalledWith([{ id: "conv-1" }]);
-
       (getUserComparisonConversations as any).mockRejectedValue(new Error("Fail"));
       await getComparisonConversations({ user: mockUser } as any, mockRes() as any);
       expect(sendInternalError).toHaveBeenCalled();
@@ -217,18 +210,15 @@ describe("comparison controller", () => {
 
       await getComparisonMessages({ user: mockUser, params: { conversationId: "conv-123" } } as any, res as any);
       expect(res.json).toHaveBeenCalledWith([{ id: "prompt-1" }]);
-
       (validateAuth as any).mockReturnValue({ isValid: false });
       await getComparisonMessages(
         { user: mockUser, params: { conversationId: "conv-123" } } as any,
         mockRes() as any,
       );
       expect(sendUnauthorized).toHaveBeenCalled();
-
       (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
       await getComparisonMessages({ user: mockUser, params: {} } as any, mockRes() as any);
       expect(sendBadRequest).toHaveBeenCalled();
-
       (getComparisonConversationPrompts as any).mockResolvedValue(
         Result.fail({ type: "NotFound", message: "Not found" }),
       );
@@ -237,7 +227,6 @@ describe("comparison controller", () => {
         mockRes() as any,
       );
       expect(sendNotFound).toHaveBeenCalled();
-
       (getComparisonConversationPrompts as any).mockResolvedValue(
         Result.fail({ type: "DatabaseError", message: "DB error" }),
       );

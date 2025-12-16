@@ -9,15 +9,9 @@
     "baseUrl": "./",
     "outDir": "./dist",
     "paths": {
-      "@/*": [
-        "./client/src/*"
-      ],
-      "@server/*": [
-        "./server/src/*"
-      ],
-      "@shared/*": [
-        "./shared/*"
-      ]
+      "@/*": ["./client/src/*"],
+      "@server/*": ["./server/src/*"],
+      "@shared/*": ["./shared/*"]
     }
   }
 }

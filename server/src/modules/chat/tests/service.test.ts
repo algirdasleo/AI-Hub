@@ -44,19 +44,16 @@ describe("chat service", () => {
       result = await createChatJobPayload("user-789", { ...mockParams, conversationId: "existing-conv" });
       expect(result.value.conversationId).toBe("existing-conv");
       expect(createChatConversation).toHaveBeenCalledTimes(1);
-
       (createChatConversation as any).mockResolvedValue(
         Result.fail({ type: "DatabaseError", message: "Failed to create" }),
       );
       result = await createChatJobPayload("user-123", mockParams);
       expect(result.isSuccess).toBe(false);
       expect(result.error.message).toBe("Failed to create chat conversation");
-
       (createChatConversation as any).mockResolvedValue(Result.ok({ id: "conv-123" }));
       (addMessage as any).mockResolvedValue(Result.fail({ type: "DatabaseError", message: "Failed to save" }));
       result = await createChatJobPayload("user-123", mockParams);
       expect(result.error.message).toBe("Failed to save user message");
-
       (createChatConversation as any).mockRejectedValue(new Error("Unexpected database error"));
       result = await createChatJobPayload("user-123", mockParams);
       expect(result.isSuccess).toBe(false);
@@ -87,15 +84,12 @@ describe("chat service", () => {
 
       let result = await executeChatStream(mockRes, mockParams, "user-123");
       expect(result.isSuccess).toBe(true);
-
       (streamModel as any).mockResolvedValue({ success: false });
       result = await executeChatStream(mockRes, mockParams, "user-123");
       expect(result.error.type).toBe("StreamError");
-
       (streamModel as any).mockResolvedValue({ success: true, usage: null, content: "Response" });
       result = await executeChatStream(mockRes, mockParams, "user-123");
       expect(result.error.message).toBe("No usage data");
-
       (streamModel as any).mockResolvedValue({
         success: true,
         usage: { totalTokens: 100, inputTokens: 50, outputTokens: 50 },
@@ -104,7 +98,6 @@ describe("chat service", () => {
       (addMessage as any).mockResolvedValue(Result.fail({ type: "DatabaseError", message: "Save failed" }));
       result = await executeChatStream(mockRes, mockParams, "user-123");
       expect(result.isSuccess).toBe(false);
-
       (streamModel as any).mockRejectedValue(new Error("Stream crashed"));
       result = await executeChatStream(mockRes, mockParams, "user-123");
       expect(result.isSuccess).toBe(false);

@@ -27,7 +27,7 @@ export function transformComparisonPromptsToHistory(prompts: ComparisonPrompt[])
           model.latencyMs = statsData.latency_ms;
         }
       }
-      
+
       return model;
     }),
     timestamp: new Date(prompt.created_at),

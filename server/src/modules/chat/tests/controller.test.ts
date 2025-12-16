@@ -76,11 +76,9 @@ describe("chat controller", () => {
         res as any,
       );
       expect(res.json).toHaveBeenCalledWith({ uid: "job-uid", conversationId: "conv-123" });
-
       (validateAuth as any).mockReturnValue({ isValid: false });
       await createChatJob({ user: mockUser } as any, mockRes() as any);
       expect(sendUnauthorized).toHaveBeenCalled();
-
       (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
       (createChatJobPayload as any).mockResolvedValue(Result.fail({ type: "DatabaseError", message: "Fail" }));
       await createChatJob(
@@ -104,16 +102,13 @@ describe("chat controller", () => {
 
       await streamChatByUid({ user: mockUser } as any, mockRes() as any);
       expect(deleteJob).toHaveBeenCalledWith("uid");
-
       (getUidFromQuery as any).mockReturnValue(null);
       await streamChatByUid({ user: mockUser } as any, mockRes() as any);
       expect(sendBadRequest).toHaveBeenCalled();
-
       (getUidFromQuery as any).mockReturnValue("uid");
       (getJob as any).mockResolvedValue(undefined);
       await streamChatByUid({ user: mockUser } as any, mockRes() as any);
       expect(sendNotFound).toHaveBeenCalled();
-
       (getJob as any).mockResolvedValue({
         prompt: "Hi",
         provider: "OpenAI",
@@ -122,7 +117,6 @@ describe("chat controller", () => {
       });
       await streamChatByUid({} as any, mockRes() as any);
       expect(sendUnauthorized).toHaveBeenCalled();
-
       (getJob as any).mockResolvedValue({
         prompt: "Hi",
         provider: "OpenAI",
@@ -143,7 +137,6 @@ describe("chat controller", () => {
 
       await getConversations({ user: mockUser } as any, res as any);
       expect(res.json).toHaveBeenCalledWith([{ id: "conv-1" }]);
-
       (getUserConversations as any).mockRejectedValue(new Error("Fail"));
       await getConversations({ user: mockUser } as any, mockRes() as any);
       expect(sendInternalError).toHaveBeenCalled();
@@ -158,19 +151,15 @@ describe("chat controller", () => {
 
       await getMessages({ user: mockUser, params: { conversationId: "conv-123" } } as any, res as any);
       expect(res.json).toHaveBeenCalledWith([{ id: "msg-1" }]);
-
       (validateAuth as any).mockReturnValue({ isValid: false });
       await getMessages({ user: mockUser, params: { conversationId: "conv-123" } } as any, mockRes() as any);
       expect(sendUnauthorized).toHaveBeenCalled();
-
       (validateAuth as any).mockReturnValue({ isValid: true, userId: "user-123" });
       await getMessages({ user: mockUser, params: {} } as any, mockRes() as any);
       expect(sendBadRequest).toHaveBeenCalled();
-
       (getConversationMessages as any).mockResolvedValue(Result.fail({ type: "NotFound", message: "Not found" }));
       await getMessages({ user: mockUser, params: { conversationId: "conv-123" } } as any, mockRes() as any);
       expect(sendNotFound).toHaveBeenCalled();
-
       (getConversationMessages as any).mockResolvedValue(
         Result.fail({ type: "DatabaseError", message: "DB error" }),
       );

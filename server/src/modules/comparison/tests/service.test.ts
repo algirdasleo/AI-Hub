@@ -42,20 +42,17 @@ describe("comparison service", () => {
 
       result = await createComparisonJobPayload("user-123", { ...mockParams, conversationId: "existing-conv" });
       expect(result.value.conversationId).toBe("existing-conv");
-
       (createComparisonConversation as any).mockResolvedValue(
         Result.fail({ type: "DatabaseError", message: "Failed" }),
       );
       result = await createComparisonJobPayload("user-123", mockParams);
       expect(result.error.message).toBe("Failed to create comparison conversation");
-
       (createComparisonConversation as any).mockResolvedValue(Result.ok({ id: "conv-123" }));
       (insertComparisonPrompt as any).mockResolvedValue(
         Result.fail({ type: "DatabaseError", message: "Failed to insert prompt" }),
       );
       result = await createComparisonJobPayload("user-123", mockParams);
       expect(result.error.message).toBe("Failed to create comparison prompt");
-
       (createComparisonConversation as any).mockRejectedValue(new Error("Unexpected database error"));
       result = await createComparisonJobPayload("user-123", mockParams);
       expect(result.isSuccess).toBe(false);
@@ -82,7 +79,6 @@ describe("comparison service", () => {
 
       let result = await executeComparisonStream(mockRes, mockParams, "user-123");
       expect(result.isSuccess).toBe(true);
-
       (streamMultipleModels as any).mockRejectedValue(new Error("Stream failed"));
       result = await executeComparisonStream(mockRes, mockParams, "user-123");
       expect(result.error.type).toBe("InternalServerError");
