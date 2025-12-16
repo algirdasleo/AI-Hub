@@ -48,6 +48,7 @@ describe("projects controller", () => {
     params,
     user: { id: userId },
     cookies: { accessToken: "token" },
+    file: undefined as any,
   });
 
   const mockRes = () => {
@@ -84,8 +85,7 @@ describe("projects controller", () => {
     });
 
     it("returns 401 when unauthorized", async () => {
-      vi.mocked(utils.validateAuth).mockReturnValue({ isValid: false, userId: null });
-      vi.mocked(utils.sendUnauthorized).mockReturnValue(undefined);
+      vi.mocked(utils.validateAuth).mockReturnValue({ isValid: false } as any);
 
       const req = mockReq({ name: "Test" });
       const res = mockRes();
@@ -96,8 +96,6 @@ describe("projects controller", () => {
     });
 
     it("returns 400 for invalid data", async () => {
-      vi.mocked(utils.sendBadRequest).mockReturnValue(undefined);
-
       const req = mockReq({}); // Missing required 'name'
       const res = mockRes();
 
@@ -108,7 +106,6 @@ describe("projects controller", () => {
 
     it("returns 500 on database error", async () => {
       vi.mocked(repo.createProject).mockResolvedValue(Result.fail({ type: "DatabaseError", message: "DB error" }));
-      vi.mocked(utils.sendInternalError).mockReturnValue(undefined);
 
       const req = mockReq({ name: "Test" });
       const res = mockRes();
@@ -142,8 +139,7 @@ describe("projects controller", () => {
     });
 
     it("returns 401 when unauthorized", async () => {
-      vi.mocked(utils.validateAuth).mockReturnValue({ isValid: false, userId: null });
-      vi.mocked(utils.sendUnauthorized).mockReturnValue(undefined);
+      vi.mocked(utils.validateAuth).mockReturnValue({ isValid: false } as any);
 
       const req = mockReq();
       const res = mockRes();
@@ -176,7 +172,6 @@ describe("projects controller", () => {
 
     it("returns 404 when project not found", async () => {
       vi.mocked(repo.getProjectById).mockResolvedValue(Result.fail({ type: "NotFound", message: "Not found" }));
-      vi.mocked(utils.sendNotFound).mockReturnValue(undefined);
 
       const req = mockReq({}, "user-123", { projectId: "invalid" });
       const res = mockRes();
@@ -208,8 +203,6 @@ describe("projects controller", () => {
     });
 
     it("returns 400 for invalid update data", async () => {
-      vi.mocked(utils.sendBadRequest).mockReturnValue(undefined);
-
       const req = mockReq({ name: "" }, "user-123", { projectId: "proj-1" });
       const res = mockRes();
 
@@ -220,7 +213,6 @@ describe("projects controller", () => {
 
     it("returns 404 when project not found", async () => {
       vi.mocked(repo.updateProject).mockResolvedValue(Result.fail({ type: "NotFound", message: "Not found" }));
-      vi.mocked(utils.sendNotFound).mockReturnValue(undefined);
 
       const req = mockReq({ name: "Updated" }, "user-123", { projectId: "invalid" });
       const res = mockRes();
@@ -248,7 +240,6 @@ describe("projects controller", () => {
 
     it("returns 404 when project not found", async () => {
       vi.mocked(repo.deleteProject).mockResolvedValue(Result.fail({ type: "NotFound", message: "Not found" }));
-      vi.mocked(utils.sendNotFound).mockReturnValue(undefined);
 
       const req = mockReq({}, "user-123", { projectId: "invalid" });
       const res = mockRes();
@@ -261,7 +252,9 @@ describe("projects controller", () => {
 
   describe("deleteDocumentHandler", () => {
     it("deletes document successfully", async () => {
-      vi.mocked(repo.getProjectById).mockResolvedValue(Result.ok({ id: "proj-1", name: "Test" }));
+      vi.mocked(repo.getProjectById).mockResolvedValue(
+        Result.ok({ id: "proj-1", name: "Test", description: "", created_at: new Date(), updated_at: new Date() }),
+      );
       vi.mocked(repo.deleteDocument).mockResolvedValue(Result.ok(null));
 
       const req = mockReq({}, "user-123", { projectId: "proj-1", documentId: "doc-1" });
@@ -276,8 +269,7 @@ describe("projects controller", () => {
     });
 
     it("returns 401 when unauthorized", async () => {
-      vi.mocked(utils.validateAuth).mockReturnValue({ isValid: false, userId: null });
-      vi.mocked(utils.sendUnauthorized).mockReturnValue(undefined);
+      vi.mocked(utils.validateAuth).mockReturnValue({ isValid: false } as any);
 
       const req = mockReq({}, "user-123", { projectId: "proj-1", documentId: "doc-1" });
       const res = mockRes();
@@ -288,9 +280,10 @@ describe("projects controller", () => {
     });
 
     it("returns 404 when document not found", async () => {
-      vi.mocked(repo.getProjectById).mockResolvedValue(Result.ok({ id: "proj-1", name: "Test" }));
+      vi.mocked(repo.getProjectById).mockResolvedValue(
+        Result.ok({ id: "proj-1", name: "Test", description: "", created_at: new Date(), updated_at: new Date() }),
+      );
       vi.mocked(repo.deleteDocument).mockResolvedValue(Result.fail({ type: "NotFound", message: "Not found" }));
-      vi.mocked(utils.sendNotFound).mockReturnValue(undefined);
 
       const req = mockReq({}, "user-123", { projectId: "proj-1", documentId: "invalid" });
       const res = mockRes();
@@ -303,8 +296,7 @@ describe("projects controller", () => {
 
   describe("uploadDocumentHandler", () => {
     it("returns 401 when unauthorized", async () => {
-      vi.mocked(utils.validateAuth).mockReturnValue({ isValid: false, userId: null });
-      vi.mocked(utils.sendUnauthorized).mockReturnValue(undefined);
+      vi.mocked(utils.validateAuth).mockReturnValue({ isValid: false } as any);
 
       const req = mockReq({}, "user-123", { projectId: "proj-1" });
       req.file = { filename: "test.pdf" };
@@ -316,8 +308,9 @@ describe("projects controller", () => {
     });
 
     it("returns 400 when no file provided", async () => {
-      vi.mocked(repo.getProjectById).mockResolvedValue(Result.ok({ id: "proj-1", name: "Test" }));
-      vi.mocked(utils.sendBadRequest).mockReturnValue(undefined);
+      vi.mocked(repo.getProjectById).mockResolvedValue(
+        Result.ok({ id: "proj-1", name: "Test", description: "", created_at: new Date(), updated_at: new Date() }),
+      );
 
       const req = mockReq({}, "user-123", { projectId: "proj-1" });
       // No file attached
@@ -330,7 +323,6 @@ describe("projects controller", () => {
 
     it("returns 404 when project not found", async () => {
       vi.mocked(repo.getProjectById).mockResolvedValue(Result.fail({ type: "NotFound", message: "Not found" }));
-      vi.mocked(utils.sendNotFound).mockReturnValue(undefined);
 
       const req = mockReq({}, "user-123", { projectId: "invalid" });
       req.file = { filename: "test.pdf" };

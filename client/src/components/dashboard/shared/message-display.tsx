@@ -161,7 +161,7 @@ export function MessageDisplay({
                       </div>
                     )
                   ) : (
-                    <p className="text-muted-foreground text-sm text-gray-500">...</p>
+                    <p className="text-sm text-muted-foreground">...</p>
                   )}
                 </div>
               ))

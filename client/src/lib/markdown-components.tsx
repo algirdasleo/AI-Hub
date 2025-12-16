@@ -25,7 +25,7 @@ export const markdownComponents: Components = {
   code: ({ children }) => <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-sans">{children}</code>,
   pre: ({ children }) => (
     <div className="flex justify-center mb-4">
-      <pre className="p-6 rounded-lg overflow-auto border border-border w-4/5 text-sm font-sans font-medium [&_code]:p-0 [&_code]:bg-transparent [&_code]:rounded-none [&_code]:!font-sans">
+      <pre className="p-6 rounded-lg overflow-auto border border-border w-4/5 text-sm font-sans font-medium [&_code]:p-0 [&_code]:bg-transparent [&_code]:rounded-none [&_code]:font-sans!">
         {children}
       </pre>
     </div>
