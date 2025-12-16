@@ -83,7 +83,7 @@ export const MODELS: Record<string, AIModel> = {
     maxTokens: 65536,
     contextWindow: 1048576, // 1M tokens
     description:
-      "Our latest reasoning-first model, optimized for complex agentic workflows, advanced reasoning, and state-of-the-art performance. (Preview)",
+      "Latest reasoning-first model, optimized for complex agentic workflows, advanced reasoning, and state-of-the-art performance. (Preview)",
   },
 
   "gemini-2.5-pro": {
