@@ -52,15 +52,15 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 flex-1 overflow-hidden">
+      <CardContent className="pt-0 flex-1 overflow-hidden flex flex-col">
         {model.error ? (
           <div className="flex items-center gap-2 p-4 text-destructive bg-destructive/10 rounded-lg">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span className="text-sm">{model.error}</span>
           </div>
         ) : model.isLoading ? (
-          <div className="space-y-3 flex flex-col h-full">
-            <div className="text-sm overflow-y-auto max-h-80 flex-1">
+          <>
+            <div className="text-sm overflow-y-auto flex-1 mb-3">
               {model.content ? (
                 <PrettyMarkdown content={model.content} />
               ) : (
@@ -71,7 +71,7 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between pt-2 shrink-0">
+            <div className="flex items-center justify-between pt-2 shrink-0 border-t">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-3 w-3 animate-spin" />
                 <span className="text-xs">{model.content ? "Generating..." : "Starting generation..."}</span>
@@ -86,13 +86,13 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
                 </div>
               )}
             </div>
-          </div>
+          </>
         ) : model.content ? (
-          <div className="space-y-2">
-            <div className="text-sm overflow-y-auto max-h-80">
+          <>
+            <div className="text-sm overflow-y-auto flex-1 mb-3">
               <PrettyMarkdown content={model.content} />
             </div>
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-xs pt-3 shrink-0 border-t">
               <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                 <div className="h-2 w-2 bg-green-500 rounded-full"></div>
                 <span>Complete</span>
@@ -115,7 +115,7 @@ export function ModelResponseCard({ model }: ModelResponseCardProps) {
                 )}
               </div>
             </div>
-          </div>
+          </>
         ) : (
           <div className="text-muted-foreground text-sm italic">No response generated</div>
         )}

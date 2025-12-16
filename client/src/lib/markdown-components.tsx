@@ -22,9 +22,13 @@ export const markdownComponents: Components = {
   ul: ({ children }) => <ul className="list-disc list-outside mb-4 pl-6 space-y-1">{children}</ul>,
   ol: ({ children }) => <ol className="list-decimal list-outside mb-4 pl-6 space-y-1">{children}</ol>,
   li: ({ children }) => <li className="text-sm">{children}</li>,
-  code: ({ children }) => <code className="bg-muted px-1.5 py-0.5 rounded text-xs">{children}</code>,
+  code: ({ children }) => <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-sans">{children}</code>,
   pre: ({ children }) => (
-    <pre className="bg-muted p-4 rounded-lg overflow-auto mb-4 border border-border">{children}</pre>
+    <div className="flex justify-center mb-4">
+      <pre className="p-6 rounded-lg overflow-auto border border-border w-4/5 text-sm font-sans font-medium [&_code]:p-0 [&_code]:bg-transparent [&_code]:rounded-none [&_code]:!font-sans">
+        {children}
+      </pre>
+    </div>
   ),
   blockquote: ({ children }) => (
     <blockquote className="border-l-4 border-muted-foreground pl-4 my-4 text-muted-foreground italic">

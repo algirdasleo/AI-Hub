@@ -6,11 +6,22 @@ import { AlertCircle } from "lucide-react";
 import { MessageRole } from "@shared/types/chat/message";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeSanitize from "rehype-sanitize";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeKatex from "rehype-katex";
+import rehypeHighlight from "rehype-highlight";
 import { markdownComponents } from "@/lib/markdown-components";
 import { MODELS } from "@shared/config/models";
 import "katex/dist/katex.min.css";
+import "highlight.js/styles/atom-one-dark.css";
+
+const sanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    code: [["className"]],
+    span: [["className"]],
+  },
+};
 
 export interface Message {
   id: string;
@@ -95,16 +106,16 @@ export function MessageDisplay({
                         {message.content}
                       </div>
                     ) : (
-                      <div className="space-y-2 inline-block max-w-[90%]">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeKatex, rehypeSanitize]}
-                            components={markdownComponents}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
+                      <div className="space-y-2 w-full">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          rehypePlugins={[rehypeHighlight, rehypeKatex, [rehypeSanitize, sanitizeSchema]]}
+                          components={markdownComponents}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
                         {(message.usage || message.stats) && (
-                          <div className="text-xs text-muted-foreground pt-1">
+                          <div className="text-xs text-muted-foreground">
                             {message.usage ? (
                               <div className="flex items-center gap-3">
                                 <div
