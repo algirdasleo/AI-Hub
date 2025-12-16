@@ -12,7 +12,6 @@ async function globalSetup(config: FullConfig) {
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "mock-key-test-only";
   process.env.TEST_MODE = "true";
   process.env.DISABLE_REAL_SUPABASE = "true";
-  process.env.NODE_ENV = "test";
 
   // Block environment variable usage of real URLs
   if (process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("supabase.co")) {
